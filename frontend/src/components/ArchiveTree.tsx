@@ -107,6 +107,43 @@ function getNodeWidth(name: string, isDoc: boolean, isRoot: boolean, keywordCoun
   return base * 2;
 }
 
+// ===== 极简纯色图标（12x12 viewBox，单色填充，无渐变/多色 emoji）=====
+// 约定：图谱中除「知识库位置（📁 归档目录）」沿用文件夹图标外，
+// 其余图标一律使用纯色、简约、极简风格的 SVG 图标。
+const ICONS = {
+  // 文档（含折角剪影；text 型叠加白色双横线，image 型叠加白色圆点）
+  file: "M7 .9l3.4 3.4v6.5a1.2 1.2 0 0 1-1.2 1.2H2.8a1.2 1.2 0 0 1-1.2-1.2V2.1A1.2 1.2 0 0 1 2.8.9H7z",
+  // 关键字标签
+  tag: "M1 1h5.3l4.7 4.7-5.3 5.3L1 7.7V1z",
+  // 知识库（数据库层叠剪影）
+  db: "M2 .6h8a1.3 1.3 0 0 1 0 2.6H2A1.3 1.3 0 0 1 2 .6z M2 4.7h8a1.3 1.3 0 0 1 0 2.6H2a1.3 1.3 0 0 1 0-2.6z M2 8.8h8a1.3 1.3 0 0 1 0 2.6H2a1.3 1.3 0 0 1 0-2.6z",
+  // 重命名（铅笔）
+  edit: "M8.2 1l2.8 2.8-7.6 7.6L0 12l.6-3.4L8.2 1z",
+  // 移动到根目录（上箭头）
+  up: "M6 .8l4.6 4.6H7.4v5.8H4.6V5.4H1.4L6 .8z",
+  // 删除（垃圾桶）
+  trash: "M4.3 .9h3.4l.5 1.5h2.3v1.4H1.5V2.4h2.3l.5-1.5z M2.6 4.2h6.8l-.6 6.2a.9.9 0 0 1-.9.8H4.1a.9.9 0 0 1-.9-.8L2.6 4.2z",
+  // 手动创建标记（图钉）
+  pin: "M6 .8a3.4 3.4 0 0 1 3.4 3.4c0 1.25-.68 2.35-1.7 2.95V8.5H4.3V7.15A3.4 3.4 0 0 1 6 .8z M5.2 9.5h1.6V12H5.2z",
+  // 折叠/展开（上下双三角）
+  fold: "M6 .8l3.2 3.8H2.8L6 .8z M6 11.2L2.8 7.4h6.4L6 11.2z",
+};
+
+// HTML 浮层（详情面板 / 右键菜单 / 弹窗）用的内联图标
+function Ico({ name, size = 12, color = "#667085", style }: {
+  name: keyof typeof ICONS;
+  size?: number;
+  color?: string;
+  style?: React.CSSProperties;
+}) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 12 12"
+      style={{ flexShrink: 0, display: "inline-block", verticalAlign: "middle", ...style }}>
+      <path d={ICONS[name]} fill={color} />
+    </svg>
+  );
+}
+
 function MenuItem({ children, danger, onClick }: { children: React.ReactNode; danger?: boolean; onClick: () => void }) {
   return (
     <div
@@ -892,26 +929,47 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
 
                 {isDoc ? (
                   <g style={{ pointerEvents: "none" }}>
-                    <text x={cx + NODE_PADDING_X_DOC + 2} y={cy + nh / 2} dy="0.35em"
-                      style={{ fontSize: `${fontSize}px`, fill: textColor, fontWeight: 600, userSelect: "none" }}>
-                      {node.data.pdf_type === "image" ? "📷" : node.data.pdf_type === "text" ? "📝" : "📄"}
-                    </text>
+                    {/* 文档类型图标：纯色极简剪影（text=双横线, image=圆点） */}
+                    <g transform={`translate(${cx + 9}, ${cy + nh / 2 - 4.5}) scale(0.75)`}>
+                      <path d={ICONS.file} fill={textColor} />
+                      {node.data.pdf_type === "image" ? (
+                        <circle cx={5.7} cy={5.4} r={1.6} fill={bgColor} />
+                      ) : node.data.pdf_type === "text" ? (
+                        <>
+                          <rect x={3.4} y={4.7} width={5.4} height={0.9} rx={0.45} fill={bgColor} />
+                          <rect x={3.4} y={6.7} width={5.4} height={0.9} rx={0.45} fill={bgColor} />
+                        </>
+                      ) : null}
+                    </g>
                     <text x={cx + NODE_PADDING_X_DOC + 20} y={cy + nh / 2} dy="0.35em"
                       style={{ fontSize: `${fontSize}px`, fill: textColor, fontWeight: 500, userSelect: "none" }}>
                       {node.data.name.length > 11 ? node.data.name.slice(0, 11) + "…" : node.data.name}
                     </text>
                     {(node.data.keywords || []).length > 0 && (
-                      <text x={cx + nw - NODE_PADDING_X_DOC} y={cy + nh / 2} dy="0.35em" textAnchor="end"
-                        style={{ fontSize: "8px", fill: COLORS.keyword, fontWeight: 700, userSelect: "none" }}>
-                        🏷{(node.data.keywords || []).length}
-                      </text>
+                      <>
+                        {/* 关键字数量：纯色标签图标 + 数字 */}
+                        <g transform={`translate(${cx + nw - NODE_PADDING_X_DOC - 13}, ${cy + nh / 2 - 4}) scale(0.66)`}>
+                          <path d={ICONS.tag} fill={COLORS.keyword} />
+                          <circle cx={3.5} cy={3.5} r={1} fill={bgColor} />
+                        </g>
+                        <text x={cx + nw - NODE_PADDING_X_DOC} y={cy + nh / 2} dy="0.35em" textAnchor="end"
+                          style={{ fontSize: "8px", fill: COLORS.keyword, fontWeight: 700, userSelect: "none" }}>
+                          {(node.data.keywords || []).length}
+                        </text>
+                      </>
                     )}
                   </g>
                 ) : (
                   <g style={{ pointerEvents: "none" }}>
+                    {isRoot && (
+                      <g transform={`translate(${labelX - estimateTextWidth(node.data.name, fontSize) / 2 - 14}, ${cy + nh / 2 - 4.5}) scale(0.75)`}>
+                        {/* 根节点「知识库」：纯色数据库图标 */}
+                        <path d={ICONS.db} fill={COLORS.rootText} />
+                      </g>
+                    )}
                     <text x={labelX} y={cy + nh / 2} dy="0.35em" textAnchor="middle"
                       style={{ fontSize: `${fontSize}px`, fill: textColor, fontWeight: isRoot ? 700 : 600, userSelect: "none" }}>
-                      {isRoot ? "📚 " : "📁 "}{node.data.name}
+                      {isRoot ? "" : "📁 "}{node.data.name}
                     </text>
                     {isCat && docCount > 0 && (
                       <text x={cx + nw - 20} y={cy + nh / 2} dy="0.35em" textAnchor="end"
@@ -952,7 +1010,8 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
           <span style={{ display: "inline-block", width: 28, height: 10, borderRadius: 5, background: COLORS.document }} />文档
         </span>
         <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-          <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 2, background: COLORS.keywordLight, border: `1px solid ${COLORS.keyword}` }} />文件关键字（🏷n）
+          <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 2, background: COLORS.keywordLight, border: `1px solid ${COLORS.keyword}` }} />
+          文件关键字（<Ico name="tag" size={9} color={COLORS.keyword} />n）
         </span>
         <span>单击分类看目录信息 · 双击折叠/展开 · 拖拽移动 · 右键操作菜单</span>
       </div>
@@ -1011,8 +1070,10 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
                     fontSize: "11px", padding: "2px 8px", borderRadius: "4px",
                     background: COLORS.keywordLight, color: COLORS.keyword,
                     border: `1px solid ${COLORS.keyword}33`, lineHeight: "18px",
+                    display: "inline-flex", alignItems: "center", gap: "4px",
                   }}>
-                    🏷 {k}
+                    <Ico name="tag" size={10} color={COLORS.keyword} />
+                    {k}
                   </span>
                 ))}
               </div>
@@ -1123,11 +1184,15 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
                     padding: "4px 8px", borderRadius: "4px", marginBottom: "2px",
                     background: "#FFFFFF", border: "1px solid #f2f4f7",
                   }}>
-                    <span style={{ color: "#344054", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "190px" }}>
-                      {d.pdf_type === "image" ? "📷" : d.pdf_type === "text" ? "📝" : "📄"} {d.name}
+                    <span style={{ color: "#344054", display: "flex", alignItems: "center", gap: "5px", overflow: "hidden", maxWidth: "190px" }}>
+                      <Ico name="file" size={10} color="#98a2b3" />
+                      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.name}</span>
                     </span>
                     {d.keywords && d.keywords.length > 0 && (
-                      <span style={{ fontSize: "10px", color: COLORS.keyword, fontWeight: 600 }}>🏷{d.keywords.length}</span>
+                      <span style={{ fontSize: "10px", color: COLORS.keyword, fontWeight: 600, display: "flex", alignItems: "center", gap: "2px" }}>
+                        <Ico name="tag" size={9} color={COLORS.keyword} />
+                        {d.keywords.length}
+                      </span>
                     )}
                   </div>
                 ))}
@@ -1222,26 +1287,32 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
             display: "flex", alignItems: "center", gap: "6px", maxWidth: 200,
             overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
           }}>
-            <span>{contextMenu.kind === "document" ? "📄" : contextMenu.kind === "root" ? "📚" : "📁"}</span>
+            <span style={{ display: "flex", alignItems: "center" }}>
+              {contextMenu.kind === "document"
+                ? <Ico name="file" size={12} color="#667085" />
+                : contextMenu.kind === "root"
+                  ? <Ico name="db" size={12} color="#155aef" />
+                  : <span>📁</span>}
+            </span>
             <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{contextMenu.name}</span>
-            {contextMenu.pinned && <span title="手动创建的目录（不会被自动清理）">📌</span>}
+            {contextMenu.pinned && <span title="手动创建的目录（不会被自动清理）"><Ico name="pin" size={11} color="#f79009" /></span>}
           </div>
 
           {contextMenu.kind === "category" && (
             <>
               <MenuItem onClick={() => { setMenuDialog({ mode: "rename", nodeId: contextMenu.nodeId }); setMenuInput(contextMenu.name); }}>
-                ✏️ 重命名
+                <Ico name="edit" size={11} /> 重命名
               </MenuItem>
               <MenuItem onClick={() => { setMenuDialog({ mode: "create", nodeId: contextMenu.nodeId }); setMenuInput(""); }}>
-                📁+ 新建子目录
+                <span>📁+</span> 新建子目录
               </MenuItem>
-              <MenuItem onClick={handleMenuMoveToRoot}>⬆️ 移动到根目录</MenuItem>
-              <MenuItem onClick={handleMenuToggleCollapse}>⇅ 折叠 / 展开</MenuItem>
-              <MenuItem danger onClick={handleMenuDeleteNode}>🗑 删除目录</MenuItem>
+              <MenuItem onClick={handleMenuMoveToRoot}><Ico name="up" size={11} /> 移动到根目录</MenuItem>
+              <MenuItem onClick={handleMenuToggleCollapse}><Ico name="fold" size={11} /> 折叠 / 展开</MenuItem>
+              <MenuItem danger onClick={handleMenuDeleteNode}><Ico name="trash" size={11} color="#d92d20" /> 删除目录</MenuItem>
             </>
           )}
           {contextMenu.kind === "document" && (
-            <MenuItem danger onClick={handleMenuDeleteDoc}>🗑 删除文档</MenuItem>
+            <MenuItem danger onClick={handleMenuDeleteDoc}><Ico name="trash" size={11} color="#d92d20" /> 删除文档</MenuItem>
           )}
           {contextMenu.kind === "root" && (
             <MenuItem onClick={() => { setMenuDialog({ mode: "create", nodeId: "root" }); setMenuInput(""); }}>
@@ -1275,8 +1346,10 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
             padding: "10px", fontSize: "12px", userSelect: "none",
           }}
         >
-          <div style={{ fontSize: "11px", color: "#667085", marginBottom: "6px" }}>
-            {menuDialog.mode === "rename" ? "✏️ 重命名目录" : "📁+ 新建子目录"}
+          <div style={{ fontSize: "11px", color: "#667085", marginBottom: "6px", display: "flex", alignItems: "center", gap: "5px" }}>
+            {menuDialog.mode === "rename"
+              ? <><Ico name="edit" size={11} /> 重命名目录</>
+              : <><span>📁+</span> 新建子目录</>}
           </div>
           <input
             autoFocus
