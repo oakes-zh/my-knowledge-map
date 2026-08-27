@@ -14,23 +14,52 @@ export default function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside style={{
-      width: "220px",
-      minWidth: "220px",
-      padding: "1.5rem 0.75rem",
-      borderRight: "1px solid var(--border)",
-      background: "var(--bg-primary)",
-      display: "flex",
-      flexDirection: "column",
-      gap: "4px",
-    }}>
-      <div style={{
-        padding: "0 1rem 1.5rem",
-        fontSize: "18px",
-        fontWeight: 700,
-        color: "#3C3489",
-      }}>
-        Personal KB
+    <aside
+      style={{
+        width: "220px",
+        minWidth: "220px",
+        padding: "16px 12px",
+        borderRight: "1px solid var(--border-subtle)",
+        background: "var(--bg-primary)",
+        display: "flex",
+        flexDirection: "column",
+        gap: "2px",
+      }}
+    >
+      {/* Logo — Dify style mark */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "10px",
+          padding: "8px 8px 20px",
+        }}
+      >
+        <div
+          style={{
+            width: "28px",
+            height: "28px",
+            borderRadius: "8px",
+            background: "linear-gradient(135deg, #2970ff 0%, #155aef 100%)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#ffffff",
+            fontSize: "14px",
+            fontWeight: 700,
+            boxShadow: "var(--shadow-sm)",
+          }}
+        >
+          K
+        </div>
+        <div>
+          <div style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)" }}>
+            Personal KB
+          </div>
+          <div style={{ fontSize: "11px", color: "var(--text-tertiary)", marginTop: "1px" }}>
+            知识库工作台
+          </div>
+        </div>
       </div>
 
       {navItems.map((item) => {
@@ -41,7 +70,15 @@ export default function Sidebar() {
             href={item.href}
             className={`nav-item ${isActive ? "active" : ""}`}
           >
-            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+            <svg
+              width="16"
+              height="16"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              strokeWidth={1.8}
+              style={{ flexShrink: 0 }}
+            >
               <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
             </svg>
             {item.label}
@@ -49,13 +86,15 @@ export default function Sidebar() {
         );
       })}
 
-      <div style={{ marginTop: "auto", padding: "0 1rem" }}>
-        <div style={{
-          fontSize: "12px",
-          color: "var(--text-secondary)",
-          padding: "0.75rem 0",
-          borderTop: "1px solid var(--border)",
-        }}>
+      <div style={{ marginTop: "auto", padding: "0 8px" }}>
+        <div
+          style={{
+            fontSize: "11px",
+            color: "var(--text-tertiary)",
+            padding: "12px 0 4px",
+            borderTop: "1px solid var(--border-subtle)",
+          }}
+        >
           Powered by Dify
         </div>
       </div>

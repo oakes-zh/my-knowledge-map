@@ -67,80 +67,70 @@ export default function DashboardPage() {
 
   return (
     <div>
-      <h1 style={{ fontSize: "24px", fontWeight: 600, margin: "0 0 1.5rem" }}>
-        Dashboard
-      </h1>
+      {/* Page header (Dify style: title + subtitle) */}
+      <div style={{ marginBottom: "24px" }}>
+        <h1 className="page-title" style={{ margin: 0 }}>Dashboard</h1>
+        <p className="page-subtitle" style={{ margin: "4px 0 0" }}>
+          知识总量、归档图谱与最近入库动态
+        </p>
+      </div>
 
       {/* Stats */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px", marginBottom: "2rem" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px", marginBottom: "24px" }}>
         <div className="card">
           <div style={{ fontSize: "13px", color: "var(--text-secondary)" }}>知识总量</div>
-          <div style={{ fontSize: "28px", fontWeight: 600, marginTop: "4px" }}>
+          <div style={{ fontSize: "28px", fontWeight: 600, marginTop: "4px", color: "var(--text-primary)" }}>
             {stats.loading ? <span className="loading" /> : stats.total}
           </div>
         </div>
         <div className="card">
           <div style={{ fontSize: "13px", color: "var(--text-secondary)" }}>最近入库</div>
-          <div style={{ fontSize: "28px", fontWeight: 600, marginTop: "4px" }}>
+          <div style={{ fontSize: "28px", fontWeight: 600, marginTop: "4px", color: "var(--text-primary)" }}>
             {recentDocs.length}
           </div>
         </div>
         <div className="card">
           <div style={{ fontSize: "13px", color: "var(--text-secondary)" }}>状态</div>
-          <div style={{ fontSize: "14px", fontWeight: 500, marginTop: "8px", color: "#1D9E75" }}>
-            运行中
+          <div style={{ marginTop: "10px" }}>
+            <span className="badge-soft badge-green">
+              <span style={{
+                display: "inline-block",
+                width: "6px",
+                height: "6px",
+                borderRadius: "50%",
+                background: "var(--success)",
+                boxShadow: "0 0 0 3px rgba(23, 178, 106, 0.25)",
+              }} />
+              运行中
+            </span>
           </div>
         </div>
       </div>
 
       {/* Knowledge Graph (Archive Tree) */}
-      <div className="card" style={{ marginBottom: "2rem", minHeight: "300px", display: "flex", flexDirection: "column" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem", gap: "8px", flexWrap: "wrap" }}>
-          <h2 style={{ fontSize: "15px", fontWeight: 500, margin: 0 }}>
+      <div className="card" style={{ marginBottom: "24px", minHeight: "300px", display: "flex", flexDirection: "column" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px", gap: "8px", flexWrap: "wrap" }}>
+          <h2 className="section-title" style={{ margin: 0 }}>
             知识图谱（归档树）
           </h2>
           <div style={{ display: "flex", gap: "8px" }}>
             <button
+              className="btn-sm btn-sm-accent"
               onClick={() => handleRearchive(false)}
-              style={{
-                fontSize: "12px",
-                color: "#0F766E",
-                background: "#F0FDFA",
-                border: "1px solid #0F766E",
-                borderRadius: "6px",
-                padding: "4px 10px",
-                cursor: "pointer",
-              }}
               title="为每个文件重新归纳 3-4 级归档路径（结合主旨/概要，从根目录开枝散叶）"
             >
               🔄 重新归档（3-4 级）
             </button>
             <button
+              className="btn-sm btn-sm-tertiary"
               onClick={() => handleRearchive(true)}
-              style={{
-                fontSize: "12px",
-                color: "var(--text-secondary)",
-                background: "transparent",
-                border: "1px solid var(--border)",
-                borderRadius: "6px",
-                padding: "4px 10px",
-                cursor: "pointer",
-              }}
               title="只为「未分类」的文档生成归档路径"
             >
               仅归档未分类
             </button>
             <button
+              className="btn-sm btn-sm-secondary"
               onClick={loadTree}
-              style={{
-                fontSize: "12px",
-                color: "var(--text-secondary)",
-                background: "transparent",
-                border: "1px solid var(--border)",
-                borderRadius: "6px",
-                padding: "4px 10px",
-                cursor: "pointer",
-              }}
             >
               刷新
             </button>
@@ -148,15 +138,10 @@ export default function DashboardPage() {
         </div>
 
         {rearchiveState && (
-          <div style={{
-            fontSize: "12px",
-            marginBottom: "10px",
-            padding: "8px 12px",
-            borderRadius: "6px",
-            background: rearchiveState.includes("失败") ? "#FEF2F2" : "#F0FDF4",
-            color: rearchiveState.includes("失败") ? "#991B1B" : "#166534",
-            border: `1px solid ${rearchiveState.includes("失败") ? "#FCA5A5" : "#BBF7D0"}`,
-          }}>
+          <div
+            className={`notice ${rearchiveState.includes("失败") ? "notice-error" : "notice-success"}`}
+            style={{ marginBottom: "10px" }}
+          >
             {rearchiveState}
           </div>
         )}
@@ -171,9 +156,7 @@ export default function DashboardPage() {
             <span className="loading" />
           </div>
         ) : treeError ? (
-          <div style={{ color: "#A32D2D", fontSize: "13px", padding: "0.5rem 0" }}>
-            {treeError}
-          </div>
+          <div className="notice notice-error">{treeError}</div>
         ) : !treeData ? (
           <div style={{ color: "var(--text-secondary)", fontSize: "13px", textAlign: "center", padding: "2rem" }}>
             暂无知识条目，去入库页添加第一条吧
@@ -185,32 +168,35 @@ export default function DashboardPage() {
 
       {/* Recent documents */}
       <div className="card">
-        <h2 style={{ fontSize: "15px", fontWeight: 500, margin: "0 0 1rem" }}>
+        <h2 className="section-title" style={{ margin: "0 0 12px" }}>
           最近入库
         </h2>
         {error && (
-          <div style={{ color: "#A32D2D", fontSize: "13px", padding: "0.5rem 0" }}>
-            {error}
-          </div>
+          <div className="notice notice-error" style={{ marginBottom: "8px" }}>{error}</div>
         )}
         {!error && recentDocs.length === 0 && !stats.loading && (
           <div style={{ color: "var(--text-secondary)", fontSize: "13px" }}>
             暂无知识条目，去入库页添加第一条吧
           </div>
         )}
-        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
           {recentDocs.map((doc) => (
             <div key={doc.id} style={{
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
-              padding: "0.625rem 0",
-              borderBottom: "1px solid var(--border)",
-            }}>
+              padding: "10px 8px",
+              borderRadius: "8px",
+              transition: "background 0.15s ease",
+            }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "#f9fafb"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+            >
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{
                   fontSize: "14px",
                   fontWeight: 500,
+                  color: "var(--text-primary)",
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                   whiteSpace: "nowrap",
@@ -221,11 +207,7 @@ export default function DashboardPage() {
                   {doc.word_count || 0} 字 · {doc.hit_count || 0} 次检索
                 </div>
               </div>
-              <span style={{
-                fontSize: "12px",
-                color: doc.indexing_status === "completed" ? "#1D9E75" : "#BA7517",
-                fontWeight: 500,
-              }}>
+              <span className={`badge-soft ${doc.indexing_status === "completed" ? "badge-green" : "badge-orange"}`}>
                 {doc.indexing_status === "completed" ? "已索引" : doc.indexing_status || "处理中"}
               </span>
             </div>

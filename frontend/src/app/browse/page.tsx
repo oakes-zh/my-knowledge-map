@@ -82,14 +82,16 @@ export default function BrowsePage() {
 
   return (
     <div>
-      <h1 style={{ fontSize: "24px", fontWeight: 600, margin: "0 0 1.5rem" }}>
-        知识浏览
-      </h1>
+      {/* Page header */}
+      <div style={{ marginBottom: "24px" }}>
+        <h1 className="page-title" style={{ margin: 0 }}>知识浏览</h1>
+        <p className="page-subtitle" style={{ margin: "4px 0 0" }}>
+          共 {total} 条知识，按入库时间排列
+        </p>
+      </div>
 
       {error && (
-        <div className="card" style={{ borderColor: "#F7C1C1", background: "#FCEBEB", marginBottom: "1rem" }}>
-          <div style={{ fontSize: "13px", color: "#A32D2D" }}>{error}</div>
-        </div>
+        <div className="notice notice-error" style={{ marginBottom: "16px" }}>{error}</div>
       )}
 
       {loading ? (
@@ -97,19 +99,36 @@ export default function BrowsePage() {
           <span className="loading" />
         </div>
       ) : docs.length === 0 ? (
-        <div className="card" style={{ textAlign: "center", color: "var(--text-secondary)", fontSize: "14px" }}>
+        <div className="card" style={{ textAlign: "center", color: "var(--text-secondary)", fontSize: "14px", padding: "48px" }}>
           暂无知识条目
         </div>
       ) : (
         <>
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             {docs.map((doc) => (
-              <div key={doc.id} className="card" style={{ padding: "1rem 1.25rem", position: "relative" }}>
+              <div
+                key={doc.id}
+                className="card"
+                style={{
+                  padding: "16px 20px",
+                  position: "relative",
+                  transition: "box-shadow 0.15s ease, background 0.15s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.boxShadow = "var(--shadow-md)";
+                  e.currentTarget.style.background = "#ffffff";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.boxShadow = "var(--shadow-xs)";
+                  e.currentTarget.style.background = "var(--bg-primary)";
+                }}
+              >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{
                       fontSize: "14px",
                       fontWeight: 500,
+                      color: "var(--text-primary)",
                       overflow: "hidden",
                       textOverflow: "ellipsis",
                       whiteSpace: "nowrap",
@@ -130,21 +149,12 @@ export default function BrowsePage() {
 
                     {/* 文件关键字: flat, independent attributes (auto-detected) */}
                     {doc.auto_tags && doc.auto_tags.length > 0 && (
-                      <div style={{ display: "flex", gap: "6px", marginTop: "8px", flexWrap: "wrap", alignItems: "center" }}>
-                        <span style={{ fontSize: "10px", color: "#999", fontWeight: 600, marginRight: "2px" }}>
+                      <div style={{ display: "flex", gap: "6px", marginTop: "10px", flexWrap: "wrap", alignItems: "center" }}>
+                        <span style={{ fontSize: "11px", color: "var(--text-tertiary)", fontWeight: 600, marginRight: "2px" }}>
                           关键字：
                         </span>
                         {doc.auto_tags.map((tag: string, i: number) => (
-                          <span key={i} style={{
-                            fontSize: "12px",
-                            padding: "2px 8px",
-                            borderRadius: "4px",
-                            background: "#F0F0F0",
-                            color: "#666",
-                            lineHeight: "20px",
-                          }}>
-                            {tag}
-                          </span>
+                          <span key={i} className="badge-soft badge-gray">{tag}</span>
                         ))}
                       </div>
                     )}
@@ -152,19 +162,14 @@ export default function BrowsePage() {
                     {/* Custom keywords (user-added, still flat) */}
                     {doc.custom_tags && doc.custom_tags.length > 0 && (
                       <div style={{ display: "flex", gap: "6px", marginTop: "6px", flexWrap: "wrap", alignItems: "center" }}>
-                        <span style={{ fontSize: "10px", color: "#999", fontWeight: 600, marginRight: "2px" }}>
+                        <span style={{ fontSize: "11px", color: "var(--text-tertiary)", fontWeight: 600, marginRight: "2px" }}>
                           自定义：
                         </span>
                         {doc.custom_tags.map((tag: string, i: number) => (
-                          <span key={i} style={{
-                            fontSize: "12px",
-                            padding: "2px 8px",
-                            borderRadius: "4px",
-                            background: "#D3F0E5",
-                            color: "#085041",
-                            lineHeight: "20px",
-                            cursor: "pointer",
-                          }}
+                          <span
+                            key={i}
+                            className="badge-soft badge-green"
+                            style={{ cursor: "pointer" }}
                             title="点击移除"
                             onClick={() => handleRemoveTag(doc.id, tag)}
                           >
@@ -176,7 +181,7 @@ export default function BrowsePage() {
 
                     {/* Add custom tag input */}
                     {editingDocId === doc.id ? (
-                      <div style={{ display: "flex", gap: "6px", marginTop: "6px", alignItems: "center" }}>
+                      <div style={{ display: "flex", gap: "6px", marginTop: "8px", alignItems: "center" }}>
                         <input
                           type="text"
                           value={tagInput}
@@ -190,22 +195,17 @@ export default function BrowsePage() {
                           style={{
                             fontSize: "12px",
                             padding: "2px 8px",
-                            borderRadius: "4px",
-                            border: "1px solid #ccc",
-                            outline: "none",
-                            width: "120px",
-                            height: "24px",
+                            borderRadius: "6px",
+                            width: "140px",
+                            height: "26px",
                           }}
                         />
-                        <button
-                          onClick={() => handleAddTag(doc.id)}
-                          style={{ fontSize: "12px", padding: "2px 8px", borderRadius: "4px", background: "#D3F0E5", color: "#085041", border: "none", cursor: "pointer" }}
-                        >
+                        <button className="btn-sm btn-sm-accent" onClick={() => handleAddTag(doc.id)}>
                           添加
                         </button>
                         <button
+                          className="btn-sm btn-sm-tertiary"
                           onClick={() => { setEditingDocId(null); setTagInput(""); }}
-                          style={{ fontSize: "12px", padding: "2px 8px", borderRadius: "4px", background: "#F0F0F0", color: "#666", border: "none", cursor: "pointer" }}
                         >
                           取消
                         </button>
@@ -214,90 +214,50 @@ export default function BrowsePage() {
                       (!(doc.custom_tags?.length >= 5)) && (
                         <div
                           onClick={() => { setEditingDocId(doc.id); setTagInput(""); }}
-                          style={{
-                            fontSize: "12px",
-                            marginTop: "6px",
-                            color: "#999",
-                            cursor: "pointer",
-                          }}
+                          className="btn-sm btn-sm-accent"
+                          style={{ marginTop: "6px", paddingLeft: 0 }}
                         >
                           + 添加标签
                         </div>
                       )
                     )}
                   </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
                     {/* PDF type label */}
                     {doc.pdf_type === "text" && (
-                      <span style={{
-                        fontSize: "11px",
-                        padding: "2px 6px",
-                        borderRadius: "3px",
-                        background: "#E8F0FE",
-                        color: "#1A73E8",
-                        lineHeight: "18px",
-                      }}>
-                        📝 文字PDF
-                      </span>
+                      <span className="badge-soft badge-blue">📝 文字PDF</span>
                     )}
                     {doc.pdf_type === "image" && (
-                      <span style={{
-                        fontSize: "11px",
-                        padding: "2px 6px",
-                        borderRadius: "3px",
-                        background: "#FFF3E0",
-                        color: "#E65100",
-                        lineHeight: "18px",
-                      }}>
-                        📷 扫描PDF
-                      </span>
+                      <span className="badge-soft badge-orange">📷 扫描PDF</span>
                     )}
-                    <div style={{
-                      fontSize: "12px",
-                      fontWeight: 500,
-                      color: doc.indexing_status === "completed" ? "#1D9E75" : "#BA7517",
-                    }}>
+                    <span className={`badge-soft ${doc.indexing_status === "completed" ? "badge-green" : "badge-orange"}`}>
                       {doc.indexing_status === "completed" ? "已索引" : doc.indexing_status || ""}
-                    </div>
-                    {/* Archive directory (LLM re-semantic hierarchy) - bottom right corner */}
-                    {doc.archive_path && doc.archive_path.length > 0 && (
-                      <span
-                        title={`归档目录：${doc.archive_path.join(" / ")}`}
-                        style={{
-                          position: "absolute",
-                          bottom: "8px",
-                          right: "12px",
-                          fontSize: "11px",
-                          padding: "2px 7px",
-                          borderRadius: "3px",
-                          background: "#F0FDFA",
-                          color: "#0F766E",
-                          lineHeight: "18px",
-                          maxWidth: "260px",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                          cursor: "default",
-                        }}
-                      >
-                        📁 归档目录：{doc.archive_path.join(" → ")}
-                      </span>
-                    )}
-                    <button
-                      onClick={() => handleDelete(doc.id)}
-                      style={{
-                        background: "transparent",
-                        border: "none",
-                        cursor: "pointer",
-                        color: "#A32D2D",
-                        fontSize: "12px",
-                        padding: "4px",
-                      }}
-                    >
+                    </span>
+                    <button className="btn-sm btn-sm-danger" onClick={() => handleDelete(doc.id)}>
                       删除
                     </button>
                   </div>
                 </div>
+
+                {/* Archive directory (LLM re-semantic hierarchy) - bottom right corner */}
+                {doc.archive_path && doc.archive_path.length > 0 && (
+                  <span
+                    title={`归档目录：${doc.archive_path.join(" / ")}`}
+                    className="badge-soft badge-purple"
+                    style={{
+                      position: "absolute",
+                      bottom: "12px",
+                      right: "16px",
+                      maxWidth: "280px",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      cursor: "default",
+                    }}
+                  >
+                    📁 {doc.archive_path.join(" → ")}
+                  </span>
+                )}
               </div>
             ))}
           </div>
@@ -307,8 +267,9 @@ export default function BrowsePage() {
             <div style={{
               display: "flex",
               justifyContent: "center",
-              gap: "8px",
-              marginTop: "1.5rem",
+              alignItems: "center",
+              gap: "12px",
+              marginTop: "24px",
             }}>
               <button
                 className="btn-secondary"
@@ -318,8 +279,7 @@ export default function BrowsePage() {
                 上一页
               </button>
               <span style={{
-                padding: "0.5rem 1rem",
-                fontSize: "14px",
+                fontSize: "13px",
                 color: "var(--text-secondary)",
               }}>
                 {page} / {totalPages}

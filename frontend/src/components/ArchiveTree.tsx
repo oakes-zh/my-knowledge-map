@@ -50,23 +50,25 @@ interface ArchiveTreeProps {
   onTreeChanged?: () => void;
 }
 
+// Dify palette (packages/dify-ui light theme)
 const COLORS = {
-  root: "#4F46E5",
+  root: "#155aef",          // Dify primary-600
   rootText: "#FFFFFF",
-  category: "#0F766E",
-  categoryLight: "#F0FDFA",
-  document: "#3B82F6",
-  documentLight: "#EFF6FF",
-  edge: "#D1D5DB",
-  dragSource: "#FCA5A5",
-  dropTarget: "#F59E0B",
-  keyword: "#7C3AED",
-  keywordLight: "#F5F3FF",
+  category: "#2970ff",      // Dify primary-500 (base for legends/panels)
+  categoryLight: "#eef4ff", // Dify indigo-50
+  document: "#98a2b3",      // Dify gray-400 — docs are neutral, structure is colored
+  documentLight: "#f9fafb", // Dify gray-50
+  edge: "#d0d5dd",          // Dify gray-300
+  dragSource: "#f04438",    // Dify error
+  dropTarget: "#f79009",    // Dify warning
+  keyword: "#7c3aed",       // Dify purple
+  keywordLight: "#f6f5ff",  // Dify purple-50
 };
 
 // 层级由浅入深: categories get progressively lighter colors with depth, so the
 // broad (shallow) levels read darkest and specific (deep) levels fade lighter.
-const CATEGORY_DEPTH_COLORS = ["#0F766E", "#0D9488", "#0EA5A5", "#14B8A6", "#2DD4BF", "#5EEAD4"];
+// Ramp follows Dify's accent family: blue → sky → indigo → violet.
+const CATEGORY_DEPTH_COLORS = ["#2970ff", "#0ba5ec", "#444ce7", "#7c3aed", "#6938ef", "#8098f9"];
 const LEVEL_LABELS = ["根", "领域", "主题", "分类", "具体", "更细"];
 
 const NODE_HEIGHT = 24;
@@ -113,13 +115,13 @@ function MenuItem({ children, danger, onClick }: { children: React.ReactNode; da
         padding: "6px 10px",
         borderRadius: 6,
         cursor: "pointer",
-        color: danger ? "#B91C1C" : "#334155",
+        color: danger ? "#d92d20" : "#344054",
         display: "flex",
         alignItems: "center",
         gap: 6,
         fontSize: 12,
       }}
-      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = danger ? "#FEF2F2" : "#F1F5F9"; }}
+      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = danger ? "#fef3f2" : "#f2f4f7"; }}
       onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
     >
       {children}
@@ -725,7 +727,7 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
         overflow: "hidden",
         cursor: dragSource ? "move" : panning ? "grabbing" : "grab",
         borderRadius: isFullscreen ? 0 : "8px",
-        background: "#FAFBFC",
+        background: "#fcfcfd",
         userSelect: "none", WebkitUserSelect: "none",
         MozUserSelect: "none", msUserSelect: "none",
       }}
@@ -761,7 +763,7 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
               <g key={`lvl-${d}`} style={{ pointerEvents: "none" }}>
                 <line
                   x1={extentMinY - 26} x2={extentMaxY + 26} y1={gy} y2={gy}
-                  stroke={d === 0 ? "#C7D2FE" : "#E2E8F0"}
+                  stroke={d === 0 ? "#b2ccff" : "#eaecf0"}
                   strokeWidth={1}
                   strokeDasharray={d === 0 ? "none" : "3 4"}
                 />
@@ -769,7 +771,7 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
                   x={extentMinY - 30} y={gy} dy="0.35em" textAnchor="end"
                   style={{
                     fontSize: d === 0 ? "9px" : "8px",
-                    fill: d === 0 ? "#6366F1" : "#94A3B8",
+                    fill: d === 0 ? "#155aef" : "#98a2b3",
                     fontWeight: d === 0 ? 700 : 500,
                     userSelect: "none",
                   }}
@@ -815,15 +817,15 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
               const depthColor = CATEGORY_DEPTH_COLORS[Math.min(node.depth - 1, CATEGORY_DEPTH_COLORS.length - 1)];
               bgColor = COLORS.categoryLight; borderColor = depthColor; textColor = depthColor;
             } else {
-              bgColor = COLORS.documentLight; borderColor = COLORS.document; textColor = "#1E40AF";
+              bgColor = COLORS.documentLight; borderColor = COLORS.document; textColor = "#344054";
             }
             if (isDragSrc || isInDragSubtree) {
               borderColor = COLORS.dragSource;
-              bgColor = "#FEF2F2";
+              bgColor = "#fef3f2";
             }
             if (isDropTarget) {
               borderColor = COLORS.dropTarget;
-              bgColor = "#FFFBEB";
+              bgColor = "#fffaeb";
             }
 
             const fontSize = isDoc ? FONT_SIZE_DOC : isRoot ? FONT_SIZE + 1 : FONT_SIZE;
@@ -913,7 +915,7 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
                     </text>
                     {isCat && docCount > 0 && (
                       <text x={cx + nw - 20} y={cy + nh / 2} dy="0.35em" textAnchor="end"
-                        style={{ fontSize: "8px", fill: "#9CA3AF", fontWeight: 600, userSelect: "none" }}>
+                        style={{ fontSize: "8px", fill: "#98a2b3", fontWeight: 600, userSelect: "none" }}>
                         {docCount}
                       </text>
                     )}
@@ -966,17 +968,17 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
           padding: "12px 14px", fontSize: "12px", userSelect: "none", zIndex: 5,
         }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-            <span style={{ fontWeight: 600, fontSize: "13px", color: "#1E40AF" }}>
+            <span style={{ fontWeight: 600, fontSize: "13px", color: "#155aef" }}>
               {selectedDoc.name}
             </span>
             <button onClick={() => setSelectedDoc(null)}
-              style={{ border: "none", background: "transparent", cursor: "pointer", color: "#9CA3AF", fontSize: "14px" }}>
+              style={{ border: "none", background: "transparent", cursor: "pointer", color: "#98a2b3", fontSize: "14px" }}>
               ✕
             </button>
           </div>
 
           <div style={{ marginBottom: "8px" }}>
-            <div style={{ fontSize: "10px", color: "#9CA3AF", fontWeight: 600, marginBottom: "4px" }}>
+            <div style={{ fontSize: "10px", color: "#98a2b3", fontWeight: 600, marginBottom: "4px" }}>
               归档目录（层级由浅入深 · LLM 重新语义归纳）
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", alignItems: "center" }}>
@@ -992,14 +994,14 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
                   }}>
                     📁 {level}
                   </span>
-                  {i < arr.length - 1 && <span style={{ color: "#9CA3AF" }}>→</span>}
+                  {i < arr.length - 1 && <span style={{ color: "#98a2b3" }}>→</span>}
                 </span>
               ))}
             </div>
           </div>
 
           <div>
-            <div style={{ fontSize: "10px", color: "#9CA3AF", fontWeight: 600, marginBottom: "4px" }}>
+            <div style={{ fontSize: "10px", color: "#98a2b3", fontWeight: 600, marginBottom: "4px" }}>
               文件关键字（扁平、独立属性）
             </div>
             {(selectedDoc.keywords && selectedDoc.keywords.length > 0) ? (
@@ -1015,12 +1017,12 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
                 ))}
               </div>
             ) : (
-              <span style={{ color: "#9CA3AF", fontSize: "11px" }}>（暂无关键字）</span>
+              <span style={{ color: "#98a2b3", fontSize: "11px" }}>（暂无关键字）</span>
             )}
           </div>
 
           {selectedDoc.word_count !== undefined && (
-            <div style={{ marginTop: "8px", fontSize: "11px", color: "#9CA3AF" }}>
+            <div style={{ marginTop: "8px", fontSize: "11px", color: "#98a2b3" }}>
               {selectedDoc.word_count} 字
               {selectedDoc.pdf_type === "text" ? " · 文字PDF" : selectedDoc.pdf_type === "image" ? " · 扫描PDF" : ""}
             </div>
@@ -1066,13 +1068,13 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
                 </span>
               </span>
               <button onClick={() => setSelectedCategoryId(null)}
-                style={{ border: "none", background: "transparent", cursor: "pointer", color: "#9CA3AF", fontSize: "14px" }}>
+                style={{ border: "none", background: "transparent", cursor: "pointer", color: "#98a2b3", fontSize: "14px" }}>
                 ✕
               </button>
             </div>
 
             {crumbs.length > 0 && (
-              <div style={{ marginBottom: "8px", fontSize: "11px", color: "#9CA3AF", display: "flex", flexWrap: "wrap", gap: "2px", alignItems: "center" }}>
+              <div style={{ marginBottom: "8px", fontSize: "11px", color: "#98a2b3", display: "flex", flexWrap: "wrap", gap: "2px", alignItems: "center" }}>
                 {crumbs.map((n, i) => (
                   <span key={i} style={{ display: "flex", alignItems: "center", gap: "2px" }}>
                     {n}
@@ -1085,7 +1087,7 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
 
             <div style={{
               display: "flex", gap: "12px", marginBottom: "8px", fontSize: "11px",
-              background: "#F8FAFC", borderRadius: "6px", padding: "6px 10px",
+              background: "#f9fafb", borderRadius: "6px", padding: "6px 10px",
             }}>
               <span><b style={{ fontSize: "14px", color: COLORS.category }}>{totalDocs}</b> 个文件</span>
               <span><b style={{ fontSize: "14px", color: COLORS.category }}>{subs.length}</b> 个子目录</span>
@@ -1094,19 +1096,19 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
 
             {subs.length > 0 && (
               <div style={{ marginBottom: "8px" }}>
-                <div style={{ fontSize: "10px", color: "#9CA3AF", fontWeight: 600, marginBottom: "4px" }}>包含的子目录</div>
+                <div style={{ fontSize: "10px", color: "#98a2b3", fontWeight: 600, marginBottom: "4px" }}>包含的子目录</div>
                 {subs.map(s => (
                   <div key={s.id} onClick={(e) => { e.stopPropagation(); setSelectedCategoryId(s.id); }}
                     style={{
                       display: "flex", justifyContent: "space-between", alignItems: "center",
                       padding: "4px 8px", borderRadius: "4px", cursor: "pointer",
-                      background: "#FFFFFF", border: "1px solid #F1F5F9", marginBottom: "2px",
+                      background: "#FFFFFF", border: "1px solid #f2f4f7", marginBottom: "2px",
                     }}
                     onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = COLORS.categoryLight; }}
                     onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "#FFFFFF"; }}
                   >
                     <span style={{ color: COLORS.category, fontWeight: 500 }}>📁 {s.name}</span>
-                    <span style={{ fontSize: "11px", color: "#94A3B8" }}>{s.doc_count ?? 0} 个文件 ›</span>
+                    <span style={{ fontSize: "11px", color: "#98a2b3" }}>{s.doc_count ?? 0} 个文件 ›</span>
                   </div>
                 ))}
               </div>
@@ -1114,14 +1116,14 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
 
             {docs.length > 0 && (
               <div style={{ marginBottom: "4px" }}>
-                <div style={{ fontSize: "10px", color: "#9CA3AF", fontWeight: 600, marginBottom: "4px" }}>本目录文件</div>
+                <div style={{ fontSize: "10px", color: "#98a2b3", fontWeight: 600, marginBottom: "4px" }}>本目录文件</div>
                 {docs.map(d => (
                   <div key={d.id} style={{
                     display: "flex", justifyContent: "space-between", alignItems: "center",
                     padding: "4px 8px", borderRadius: "4px", marginBottom: "2px",
-                    background: "#FFFFFF", border: "1px solid #F1F5F9",
+                    background: "#FFFFFF", border: "1px solid #f2f4f7",
                   }}>
-                    <span style={{ color: "#1E40AF", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "190px" }}>
+                    <span style={{ color: "#344054", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "190px" }}>
                       {d.pdf_type === "image" ? "📷" : d.pdf_type === "text" ? "📝" : "📄"} {d.name}
                     </span>
                     {d.keywords && d.keywords.length > 0 && (
@@ -1133,10 +1135,10 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
             )}
 
             {subs.length === 0 && docs.length === 0 && (
-              <div style={{ color: "#9CA3AF", fontSize: "11px", padding: "4px 0" }}>（空目录）</div>
+              <div style={{ color: "#98a2b3", fontSize: "11px", padding: "4px 0" }}>（空目录）</div>
             )}
 
-            <div style={{ marginTop: "8px", fontSize: "10px", color: "#CBD5E1", textAlign: "center" }}>
+            <div style={{ marginTop: "8px", fontSize: "10px", color: "#d0d5dd", textAlign: "center" }}>
               双击折叠 / 展开 · 单击子目录下钻
             </div>
           </div>
@@ -1145,13 +1147,10 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
 
       {/* Move status toast */}
       {moveStatus && (
-        <div style={{
+        <div className={`notice ${moveStatus.includes("失败") ? "notice-error" : "notice-success"}`}
+          style={{
           position: "absolute", top: "12px", left: "50%", transform: "translateX(-50%)",
-          background: moveStatus.includes("失败") ? "#FEF2F2" : "#F0FDF4",
-          color: moveStatus.includes("失败") ? "#991B1B" : "#166534",
-          border: `1px solid ${moveStatus.includes("失败") ? "#FCA5A5" : "#BBF7D0"}`,
-          borderRadius: "6px", padding: "8px 16px", fontSize: "13px",
-          fontWeight: 500, boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+          boxShadow: "var(--shadow-md)",
           zIndex: 10, userSelect: "none",
         }}>
           {moveStatus}
@@ -1159,11 +1158,10 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
       )}
 
       {dragSource && !moveStatus && (
-        <div style={{
+        <div className="notice notice-info"
+          style={{
           position: "absolute", top: "12px", left: "50%", transform: "translateX(-50%)",
-          background: "#EFF6FF", color: "#1E40AF", border: "1px solid #BFDBFE",
-          borderRadius: "6px", padding: "8px 16px", fontSize: "13px",
-          fontWeight: 500, boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+          boxShadow: "var(--shadow-md)",
           zIndex: 10, userSelect: "none",
         }}>
           拖拽到目标分类后松开（会同步更新嵌套字典与文档归档路径）
@@ -1193,12 +1191,14 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
         ].map((btn, i) => (
           <button key={i} onClick={(e) => { e.stopPropagation(); btn.action(); }}
             style={{
-              width: "32px", height: "32px", borderRadius: "6px",
-              border: "1px solid var(--border)", background: "white",
-              cursor: "pointer", fontSize: "16px",
+              width: "32px", height: "32px", borderRadius: "8px",
+              border: "0.5px solid rgba(16, 24, 40, 0.14)", background: "white",
+              cursor: "pointer", fontSize: "15px", color: "#344054",
               display: "flex", alignItems: "center", justifyContent: "center",
-              boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+              boxShadow: "var(--shadow-xs)",
             }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "#f9fafb"; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "white"; }}
           >{btn.label}</button>
         ))}
       </div>
@@ -1217,8 +1217,8 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
           }}
         >
           <div style={{
-            padding: "5px 10px", color: "#64748B", fontSize: "11px",
-            borderBottom: "1px solid #F1F5F9", marginBottom: "4px",
+            padding: "5px 10px", color: "#667085", fontSize: "11px",
+            borderBottom: "1px solid #f2f4f7", marginBottom: "4px",
             display: "flex", alignItems: "center", gap: "6px", maxWidth: 200,
             overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
           }}>
@@ -1252,7 +1252,7 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
           {menuBusy && (
             <div style={{
               padding: "4px 10px", fontSize: "11px",
-              color: menuBusy.includes("失败") ? "#991B1B" : "#0F766E",
+              color: menuBusy.includes("失败") ? "#991B1B" : "#155aef",
             }}>
               {menuBusy}
             </div>
@@ -1275,7 +1275,7 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
             padding: "10px", fontSize: "12px", userSelect: "none",
           }}
         >
-          <div style={{ fontSize: "11px", color: "#64748B", marginBottom: "6px" }}>
+          <div style={{ fontSize: "11px", color: "#667085", marginBottom: "6px" }}>
             {menuDialog.mode === "rename" ? "✏️ 重命名目录" : "📁+ 新建子目录"}
           </div>
           <input
@@ -1290,7 +1290,7 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
             maxLength={30}
             style={{
               width: "100%", boxSizing: "border-box", padding: "4px 8px",
-              borderRadius: "4px", border: "1px solid #CBD5E1", outline: "none", fontSize: "12px",
+              borderRadius: "4px", border: "1px solid #d0d5dd", outline: "none", fontSize: "12px",
             }}
           />
           <div style={{ display: "flex", gap: "6px", marginTop: "8px", justifyContent: "flex-end" }}>
@@ -1305,7 +1305,7 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
               disabled={!menuInput.trim()}
               style={{
                 fontSize: "11px", padding: "3px 10px", borderRadius: "4px", border: "none",
-                background: menuInput.trim() ? "#0F766E" : "#CBD5E1", color: "white", cursor: menuInput.trim() ? "pointer" : "not-allowed",
+                background: menuInput.trim() ? "#155aef" : "#d0d5dd", color: "white", cursor: menuInput.trim() ? "pointer" : "not-allowed",
               }}
             >
               确定

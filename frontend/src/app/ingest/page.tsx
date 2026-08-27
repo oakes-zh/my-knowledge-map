@@ -179,18 +179,35 @@ export default function IngestPage() {
   const dupCount = batchResults.filter(r => r.status === "duplicate").length;
   const errCount = batchResults.filter(r => r.status === "error").length;
 
+  const labelStyle: React.CSSProperties = {
+    fontSize: "13px",
+    fontWeight: 500,
+    display: "block",
+    marginBottom: "6px",
+    color: "var(--text-primary)",
+  };
+
+  const hintStyle: React.CSSProperties = {
+    fontSize: "12px",
+    color: "var(--text-secondary)",
+  };
+
   return (
     <div>
-      <h1 style={{ fontSize: "24px", fontWeight: 600, margin: "0 0 1.5rem" }}>
-        知识入库
-      </h1>
+      {/* Page header */}
+      <div style={{ marginBottom: "24px" }}>
+        <h1 className="page-title" style={{ margin: 0 }}>知识入库</h1>
+        <p className="page-subtitle" style={{ margin: "4px 0 0" }}>
+          支持文本、网页链接、单文件与文件夹批量导入，自动去重与语义打标
+        </p>
+      </div>
 
-      {/* Tabs */}
-      <div style={{ display: "flex", gap: "8px", marginBottom: "1.5rem" }}>
+      {/* Tabs — Dify segmented control */}
+      <div className="seg" style={{ marginBottom: "20px" }}>
         {tabs.map((t) => (
           <button
             key={t.key}
-            className={tab === t.key ? "btn-primary" : "btn-secondary"}
+            className={`seg-item ${tab === t.key ? "active" : ""}`}
             onClick={() => { setTab(t.key); setError(""); setResult(null); }}
             disabled={loading || batchRunning}
           >
@@ -200,13 +217,11 @@ export default function IngestPage() {
       </div>
 
       {/* Forms */}
-      <div className="card" style={{ marginBottom: "1.5rem" }}>
+      <div className="card" style={{ marginBottom: "20px" }}>
         {tab === "text" && (
           <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             <div>
-              <label style={{ fontSize: "13px", fontWeight: 500, display: "block", marginBottom: "6px" }}>
-                标题（可选）
-              </label>
+              <label style={labelStyle}>标题（可选）</label>
               <input
                 type="text"
                 placeholder="自动从内容截取"
@@ -216,9 +231,7 @@ export default function IngestPage() {
               />
             </div>
             <div>
-              <label style={{ fontSize: "13px", fontWeight: 500, display: "block", marginBottom: "6px" }}>
-                内容
-              </label>
+              <label style={labelStyle}>内容</label>
               <textarea
                 rows={8}
                 placeholder="粘贴文本、笔记、代码片段..."
@@ -233,18 +246,11 @@ export default function IngestPage() {
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
-              style={{
-                border: isDragging ? "2px dashed #4A90D9" : "2px dashed var(--border)",
-                borderRadius: "12px",
-                padding: "1rem",
-                textAlign: "center",
-                cursor: "pointer",
-                transition: "border-color 0.2s, background 0.2s",
-                background: isDragging ? "#EBF3FF" : "transparent",
-              }}
+              className={`dropzone ${isDragging ? "dragging" : ""}`}
+              style={{ padding: "16px" }}
               onClick={() => fileRef.current?.click()}
             >
-              <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
+              <span style={hintStyle}>
                 或直接拖拽文件/文件夹到此处
               </span>
             </div>
@@ -254,9 +260,7 @@ export default function IngestPage() {
         {tab === "url" && (
           <>
             <div>
-              <label style={{ fontSize: "13px", fontWeight: 500, display: "block", marginBottom: "6px" }}>
-                网页链接
-              </label>
+              <label style={labelStyle}>网页链接</label>
               <input
                 type="url"
                 placeholder="https://example.com/article"
@@ -264,7 +268,7 @@ export default function IngestPage() {
                 onChange={(e) => setUrl(e.target.value)}
                 disabled={loading}
               />
-              <p style={{ fontSize: "12px", color: "var(--text-secondary)", marginTop: "8px" }}>
+              <p style={{ ...hintStyle, marginTop: "8px" }}>
                 自动抓取网页正文，去除导航和广告
               </p>
             </div>
@@ -274,18 +278,11 @@ export default function IngestPage() {
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
-              style={{
-                border: isDragging ? "2px dashed #4A90D9" : "2px dashed var(--border)",
-                borderRadius: "12px",
-                padding: "1rem",
-                textAlign: "center",
-                cursor: "pointer",
-                transition: "border-color 0.2s, background 0.2s",
-                background: isDragging ? "#EBF3FF" : "transparent",
-              }}
+              className={`dropzone ${isDragging ? "dragging" : ""}`}
+              style={{ padding: "16px", marginTop: "16px" }}
               onClick={() => fileRef.current?.click()}
             >
-              <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
+              <span style={hintStyle}>
                 或直接拖拽文件/文件夹到此处
               </span>
             </div>
@@ -298,15 +295,8 @@ export default function IngestPage() {
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             onClick={() => fileRef.current?.click()}
-            style={{
-              border: isDragging ? "2px solid #4A90D9" : "2px dashed var(--border)",
-              borderRadius: "12px",
-              padding: "2rem",
-              textAlign: "center",
-              cursor: "pointer",
-              transition: "all 0.2s",
-              background: isDragging ? "#EBF3FF" : "transparent",
-            }}
+            className={`dropzone ${isDragging ? "dragging" : ""}`}
+            style={{ padding: "40px 24px" }}
           >
             <input
               ref={fileRef}
@@ -317,16 +307,16 @@ export default function IngestPage() {
             />
             {selectedFile ? (
               <div>
-                <div style={{ fontSize: "14px", fontWeight: 500 }}>{selectedFile.name}</div>
-                <div style={{ fontSize: "12px", color: "var(--text-secondary)", marginTop: "4px" }}>
+                <div style={{ fontSize: "14px", fontWeight: 500, color: "var(--text-primary)" }}>{selectedFile.name}</div>
+                <div style={{ ...hintStyle, marginTop: "4px" }}>
                   {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
                 </div>
               </div>
             ) : (
-              <div style={{ color: isDragging ? "#4A90D9" : "var(--text-secondary)", fontSize: "14px" }}>
+              <div style={{ color: isDragging ? "var(--primary)" : "var(--text-secondary)", fontSize: "14px" }}>
                 {isDragging ? "松手以上传" : "点击选择文件或拖拽到此区域"}
                 {!isDragging && (
-                  <div style={{ fontSize: "12px", marginTop: "8px" }}>
+                  <div style={{ ...hintStyle, marginTop: "8px" }}>
                     支持 PNG/JPG/PDF/DOC/DOCX/TXT/MD
                   </div>
                 )}
@@ -342,15 +332,8 @@ export default function IngestPage() {
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
-              style={{
-                border: isDragging ? "2px solid #4A90D9" : "2px dashed var(--border)",
-                borderRadius: "12px",
-                padding: "1.5rem",
-                textAlign: "center",
-                cursor: "pointer",
-                transition: "all 0.2s",
-                background: isDragging ? "#EBF3FF" : "transparent",
-              }}
+              className={`dropzone ${isDragging ? "dragging" : ""}`}
+              style={{ padding: "28px" }}
               onClick={() => batchRef.current?.click()}
             >
               <input
@@ -364,14 +347,14 @@ export default function IngestPage() {
                 directory=""
                 multiple
               />
-              <div style={{ fontSize: "20px", marginBottom: "8px" }}>📁</div>
-              <div style={{ fontSize: "14px", fontWeight: 500, color: isDragging ? "#4A90D9" : "var(--text-primary)" }}>
+              <div style={{ fontSize: "22px", marginBottom: "8px" }}>📁</div>
+              <div style={{ fontSize: "14px", fontWeight: 500, color: isDragging ? "var(--primary)" : "var(--text-primary)" }}>
                 {isDragging ? "松手以批量上传" : "点击选择文件夹"}
               </div>
-              <div style={{ fontSize: "12px", color: "var(--text-secondary)", marginTop: "4px" }}>
+              <div style={{ ...hintStyle, marginTop: "4px" }}>
                 自动识别文件夹中所有支持的文件类型
               </div>
-              <div style={{ fontSize: "11px", color: "var(--text-secondary)", marginTop: "4px" }}>
+              <div style={{ ...hintStyle, marginTop: "4px", fontSize: "11px", color: "var(--text-tertiary)" }}>
                 支持 {ALLOWED_EXTS.join(" / ")}，也可拖拽文件夹到此区域
               </div>
             </div>
@@ -379,23 +362,24 @@ export default function IngestPage() {
             {/* File list preview */}
             {batchFiles.length > 0 && (
               <div>
-                <div style={{ fontSize: "13px", fontWeight: 500, marginBottom: "8px" }}>
+                <div style={{ fontSize: "13px", fontWeight: 500, marginBottom: "8px", color: "var(--text-primary)" }}>
                   已选 {batchFiles.length} 个文件：
                 </div>
                 <div style={{
                   maxHeight: "200px",
                   overflowY: "auto",
                   border: "1px solid var(--border)",
-                  borderRadius: "8px",
-                  padding: "8px",
+                  borderRadius: "10px",
+                  padding: "8px 12px",
+                  background: "#f9fafb",
                 }}>
                   {batchFiles.map((f, i) => (
                     <div key={i} style={{
                       display: "flex",
                       justifyContent: "space-between",
-                      padding: "4px 0",
+                      padding: "5px 0",
                       fontSize: "12px",
-                      borderBottom: i < batchFiles.length - 1 ? "1px solid #F0F0F0" : undefined,
+                      borderBottom: i < batchFiles.length - 1 ? "1px solid var(--border)" : undefined,
                     }}>
                       <span style={{ color: "var(--text-primary)" }}>{f.name}</span>
                       <span style={{ color: "var(--text-secondary)" }}>
@@ -410,19 +394,19 @@ export default function IngestPage() {
             {/* Progress bar during batch upload */}
             {batchRunning && (
               <div>
-                <div style={{ fontSize: "13px", marginBottom: "6px" }}>
+                <div style={{ fontSize: "13px", marginBottom: "8px", color: "var(--text-primary)" }}>
                   正在入库… {batchProgress.current} / {batchProgress.total}
                 </div>
                 <div style={{
                   height: "6px",
                   borderRadius: "3px",
-                  background: "#E5E7EB",
+                  background: "#e9ebf0",
                   overflow: "hidden",
                 }}>
                   <div style={{
                     height: "100%",
                     borderRadius: "3px",
-                    background: "#4F46E5",
+                    background: "var(--primary-500)",
                     width: `${(batchProgress.current / batchProgress.total) * 100}%`,
                     transition: "width 0.3s",
                   }} />
@@ -433,33 +417,33 @@ export default function IngestPage() {
             {/* Batch results */}
             {batchResults.length > 0 && (
               <div>
-                <div style={{ fontSize: "13px", fontWeight: 500, marginBottom: "8px" }}>
-                  入库结果：
-                  <span style={{ color: "#085041" }}> ✅ {successCount} 成功</span>
-                  <span style={{ color: "#8B6914" }}> ⚠️ {dupCount} 重复</span>
-                  {errCount > 0 && <span style={{ color: "#A32D2D" }}> ❌ {errCount} 失败</span>}
+                <div style={{ fontSize: "13px", fontWeight: 500, marginBottom: "8px", display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                  <span style={{ color: "var(--text-primary)" }}>入库结果：</span>
+                  <span className="badge-soft badge-green"> ✅ {successCount} 成功</span>
+                  <span className="badge-soft badge-orange"> ⚠️ {dupCount} 重复</span>
+                  {errCount > 0 && <span className="badge-soft badge-red"> ❌ {errCount} 失败</span>}
                 </div>
                 <div style={{
                   maxHeight: "250px",
                   overflowY: "auto",
                   border: "1px solid var(--border)",
-                  borderRadius: "8px",
-                  padding: "8px",
+                  borderRadius: "10px",
+                  padding: "8px 12px",
+                  background: "#f9fafb",
                 }}>
                   {batchResults.map((r, i) => (
                     <div key={i} style={{
                       display: "flex",
                       alignItems: "center",
                       gap: "8px",
-                      padding: "4px 0",
+                      padding: "5px 0",
                       fontSize: "12px",
-                      borderBottom: i < batchResults.length - 1 ? "1px solid #F0F0F0" : undefined,
+                      borderBottom: i < batchResults.length - 1 ? "1px solid var(--border)" : undefined,
                     }}>
                       <span style={{
                         width: "20px",
                         textAlign: "center",
                         fontWeight: 600,
-                        color: r.status === "success" ? "#085041" : r.status === "duplicate" ? "#8B6914" : "#A32D2D",
                       }}>
                         {r.status === "success" ? "✅" : r.status === "duplicate" ? "⚠️" : "❌"}
                       </span>
@@ -480,7 +464,7 @@ export default function IngestPage() {
           <button
             className="btn-primary"
             onClick={handleBatchUpload}
-            style={{ marginBottom: "1.5rem" }}
+            style={{ marginBottom: "20px" }}
           >
             开始批量入库 ({batchFiles.length} 个文件)
           </button>
@@ -490,7 +474,7 @@ export default function IngestPage() {
           className="btn-primary"
           onClick={handleIngest}
           disabled={loading}
-          style={{ marginBottom: "1.5rem" }}
+          style={{ marginBottom: "20px" }}
         >
           {loading ? <span className="loading" /> : "入库"}
         </button>
@@ -498,18 +482,16 @@ export default function IngestPage() {
 
       {/* Error */}
       {error && (
-        <div className="card" style={{ borderColor: "#F7C1C1", background: "#FCEBEB" }}>
-          <div style={{ fontSize: "13px", color: "#A32D2D" }}>{error}</div>
-        </div>
+        <div className="notice notice-error" style={{ marginBottom: "12px" }}>{error}</div>
       )}
 
       {/* Result - Success (single file only) */}
       {tab !== "batch" && result && result.success && (
-        <div className="card" style={{ borderColor: "#9FE1CB", background: "#E1F5EE" }}>
-          <div style={{ fontSize: "14px", fontWeight: 500, color: "#085041", marginBottom: "8px" }}>
+        <div className="notice notice-success" style={{ flexDirection: "column", alignItems: "flex-start", padding: "14px 16px" }}>
+          <div style={{ fontSize: "14px", fontWeight: 600, marginBottom: "8px" }}>
             入库成功
           </div>
-          <div style={{ fontSize: "13px", color: "#085041" }}>
+          <div style={{ fontSize: "13px" }}>
             <div><strong>标题:</strong> {result.title}</div>
             {result.summary && (
               <div style={{ marginTop: "8px" }}>
@@ -517,10 +499,10 @@ export default function IngestPage() {
               </div>
             )}
             {result.tags && result.tags.length > 0 && (
-              <div style={{ marginTop: "8px" }}>
+              <div style={{ marginTop: "8px", display: "flex", alignItems: "center", flexWrap: "wrap" }}>
                 <strong>标签:</strong>{" "}
                 {result.tags.map((tag: string, i: number) => (
-                  <span key={i} className="tag" style={{ background: "#D3F0E5", color: "#085041" }}>{tag}</span>
+                  <span key={i} className="badge-soft badge-green" style={{ marginLeft: i === 0 ? "6px" : 0 }}>{tag}</span>
                 ))}
               </div>
             )}
@@ -533,11 +515,11 @@ export default function IngestPage() {
 
       {/* Result - Duplicate (single file only) */}
       {tab !== "batch" && result && !result.success && (
-        <div className="card" style={{ borderColor: "#F5D78A", background: "#FFF8E1" }}>
-          <div style={{ fontSize: "14px", fontWeight: 500, color: "#8B6914", marginBottom: "8px" }}>
+        <div className="notice notice-warning" style={{ flexDirection: "column", alignItems: "flex-start", padding: "14px 16px" }}>
+          <div style={{ fontSize: "14px", fontWeight: 600, marginBottom: "8px" }}>
             ⚠️ 内容重复
           </div>
-          <div style={{ fontSize: "13px", color: "#8B6914" }}>
+          <div style={{ fontSize: "13px" }}>
             {result.message}
             <div style={{ marginTop: "8px", fontSize: "12px", opacity: 0.7 }}>
               已有文档 ID: {result.document_id}
