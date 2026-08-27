@@ -1,0 +1,43 @@
+services:
+  # ========== Frontend (Next.js) ==========
+  frontend:
+    image: node:20-alpine
+    working_dir: /app
+    command: sh -c "npm install --registry=https://registry.npmmirror.com && npm run dev"
+    ports:
+      - "${FRONTEND_PORT:-3100}:3000"
+    env_file: .env
+    environment:
+      - BACKEND_URL=http://backend:8900
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - backend
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  # ========== Backend (FastAPI Preprocessing) ==========
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "${BACKEND_PORT:-8900}:8900"
+    env_file: .env
+    volumes:
+      - ./data/uploads:/app/uploads
+      - ./backend:/app
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - default
+      - dify_net
+    restart: unless-stopped
+
+networks:
+  dify_net:
+    external: true
+    name: docker_default

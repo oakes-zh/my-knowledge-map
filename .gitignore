@@ -1,0 +1,12 @@
+node_modules/
+.next/
+out/
+.env
+*.pyc
+__pycache__/
+uploads/
+data/
+.DS_Store
+.venv/
+.pip-cache/
+.npm-cache/
