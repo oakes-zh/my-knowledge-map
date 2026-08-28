@@ -422,7 +422,7 @@ export default function IngestPage() {
               <div>
                 <div style={{ fontSize: "13px", fontWeight: 500, marginBottom: "8px", display: "flex", gap: "10px", flexWrap: "wrap" }}>
                   <span style={{ color: "var(--text-primary)" }}>入库结果：</span>
-                  <span className="badge-soft badge-blue"><Icon name="check" size={12} color="#155aef" /> {successCount} 成功</span>
+                  <span className="badge-soft badge-gray"><Icon name="check" size={12} color="#667085" /> {successCount} 成功</span>
                   <span className="badge-soft badge-orange"><Icon name="alert" size={12} color="#b54708" /> {dupCount} 重复</span>
                   {errCount > 0 && <span className="badge-soft badge-red"><Icon name="closeCircle" size={12} color="#b42318" /> {errCount} 失败</span>}
                 </div>
@@ -449,7 +449,7 @@ export default function IngestPage() {
                         fontWeight: 600,
                       }}>
                         {r.status === "success"
-                          ? <Icon name="check" size={14} color="#155aef" />
+                          ? <Icon name="check" size={14} color="#667085" />
                           : r.status === "duplicate"
                             ? <Icon name="alert" size={14} color="#b54708" />
                             : <Icon name="closeCircle" size={14} color="#b42318" />}

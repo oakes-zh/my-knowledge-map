@@ -53,23 +53,21 @@ interface ArchiveTreeProps {
 
 // Dify palette (packages/dify-ui light theme)
 const COLORS = {
-  root: "#155aef",          // Dify primary-600
+  root: "#155aef",          // Dify primary-600 —— 全图唯一主强调色（知识库锚点）
   rootText: "#FFFFFF",
-  category: "#2970ff",      // Dify primary-500 (base for legends/panels)
-  categoryLight: "#eef4ff", // Dify indigo-50
-  document: "#98a2b3",      // Dify gray-400 — docs are neutral, structure is colored
+  category: "#344054",      // Dify gray-600 —— 分类走中性灰度，主次分明
+  categoryLight: "#f2f4f7", // Dify gray-100
+  document: "#98a2b3",      // Dify gray-400 —— 文档最浅，层级感由灰度深浅表达
   documentLight: "#f9fafb", // Dify gray-50
   edge: "#d0d5dd",          // Dify gray-300
   dragSource: "#f04438",    // Dify error
   dropTarget: "#f79009",    // Dify warning
-  keyword: "#7c3aed",       // Dify purple
+  keyword: "#7c3aed",       // Dify purple —— 关键字独立强调色（唯一非灰/非蓝）
   keywordLight: "#f6f5ff",  // Dify purple-50
 };
 
-// 层级由浅入深: categories get progressively lighter colors with depth, so the
-// broad (shallow) levels read darkest and specific (deep) levels fade lighter.
-// Ramp follows Dify's accent family: blue → sky → indigo → violet.
-const CATEGORY_DEPTH_COLORS = ["#2970ff", "#0ba5ec", "#444ce7", "#7c3aed", "#6938ef", "#8098f9"];
+// 分类层级用灰度深浅表达：上层深、下层渐浅（克制，不再用蓝→靛→紫的彩色阶梯）
+const CATEGORY_DEPTH_COLORS = ["#1d2939", "#344054", "#475467", "#667085", "#667085", "#667085"];
 const LEVEL_LABELS = ["根", "领域", "主题", "分类", "具体", "更细"];
 
 const NODE_HEIGHT = 24;
@@ -793,7 +791,7 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
               <g key={`lvl-${d}`} style={{ pointerEvents: "none" }}>
                 <line
                   x1={extentMinY - 26} x2={extentMaxY + 26} y1={gy} y2={gy}
-                  stroke={d === 0 ? "#b2ccff" : "#eaecf0"}
+                  stroke={d === 0 ? "#d0d5dd" : "#eaecf0"}
                   strokeWidth={1}
                   strokeDasharray={d === 0 ? "none" : "3 4"}
                 />
@@ -801,7 +799,7 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
                   x={extentMinY - 30} y={gy} dy="0.35em" textAnchor="end"
                   style={{
                     fontSize: d === 0 ? "9px" : "8px",
-                    fill: d === 0 ? "#155aef" : "#98a2b3",
+                    fill: d === 0 ? "#475467" : "#98a2b3",
                     fontWeight: d === 0 ? 700 : 500,
                     userSelect: "none",
                   }}
@@ -1013,7 +1011,7 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
           padding: "12px 14px", fontSize: "12px", userSelect: "none", zIndex: 5,
         }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-            <span style={{ fontWeight: 600, fontSize: "13px", color: "#155aef" }}>
+            <span style={{ fontWeight: 600, fontSize: "13px", color: "#344054" }}>
               {selectedDoc.name}
             </span>
             <button onClick={() => setSelectedDoc(null)}
@@ -1283,7 +1281,7 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
               {contextMenu.kind === "document"
                 ? <Ico name="file" size={12} color="#667085" />
                 : contextMenu.kind === "root"
-                  ? <Ico name="db" size={12} color="#155aef" />
+                  ? <Ico name="db" size={12} color="#475467" />
                   : <Ico name="folder" size={12} color={COLORS.category} />}
             </span>
             <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{contextMenu.name}</span>
@@ -1315,7 +1313,7 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
           {menuBusy && (
             <div style={{
               padding: "4px 10px", fontSize: "11px",
-              color: menuBusy.includes("失败") ? "#991B1B" : "#155aef",
+              color: menuBusy.includes("失败") ? "#991B1B" : "#475467",
             }}>
               {menuBusy}
             </div>

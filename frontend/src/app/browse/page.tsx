@@ -226,13 +226,13 @@ export default function BrowsePage() {
                   <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
                     {/* PDF type label */}
                     {doc.pdf_type === "text" && (
-                      <span className="badge-soft badge-blue"><Icon name="fileText" size={12} color="#155aef" /> 文字PDF</span>
+                      <span className="badge-soft badge-gray"><Icon name="fileText" size={12} color="#667085" /> 文字PDF</span>
                     )}
                     {doc.pdf_type === "image" && (
-                      <span className="badge-soft badge-orange"><Icon name="image" size={12} color="#b54708" /> 扫描PDF</span>
+                      <span className="badge-soft badge-gray"><Icon name="image" size={12} color="#667085" /> 扫描PDF</span>
                     )}
-                    <span className={`badge-soft ${doc.indexing_status === "completed" ? "badge-blue" : "badge-orange"}`}>
-                      {doc.indexing_status === "completed" ? <><Icon name="check" size={12} color="#155aef" /> 已索引</> : doc.indexing_status || ""}
+                    <span className={`badge-soft ${doc.indexing_status === "completed" ? "badge-gray" : "badge-orange"}`}>
+                      {doc.indexing_status === "completed" ? <><Icon name="check" size={12} color="#667085" /> 已索引</> : doc.indexing_status || ""}
                     </span>
                     <button className="btn-sm btn-sm-danger" onClick={() => handleDelete(doc.id)}>
                       <Icon name="trash" size={12} color="#d92d20" /> 删除
@@ -244,7 +244,7 @@ export default function BrowsePage() {
                 {doc.archive_path && doc.archive_path.length > 0 && (
                   <span
                     title={`归档目录：${doc.archive_path.join(" / ")}`}
-                    className="badge-soft badge-purple"
+                    className="badge-soft badge-gray"
                     style={{
                       position: "absolute",
                       bottom: "12px",
@@ -256,7 +256,7 @@ export default function BrowsePage() {
                       cursor: "default",
                     }}
                   >
-                    <Icon name="folder" size={12} color="#444ce7" /> {doc.archive_path.join(" → ")}
+                    <Icon name="folder" size={12} color="#667085" /> {doc.archive_path.join(" → ")}
                   </span>
                 )}
               </div>

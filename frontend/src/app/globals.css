@@ -259,9 +259,7 @@ input:disabled, textarea:disabled {
   font-weight: 500;
 }
 .badge-gray   { background: rgba(16, 24, 40, 0.04); color: #475467; }
-.badge-blue   { background: #eff4ff; color: #155aef; }
 .badge-orange { background: #fffaeb; color: #b54708; }
-.badge-purple { background: #f6f5ff; color: #444ce7; }
 .badge-red    { background: #fef3f2; color: #b42318; }
 
 /* ---------- Segmented control (Dify tab-slider) ---------- */
