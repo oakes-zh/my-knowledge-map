@@ -259,10 +259,10 @@ input:disabled, textarea:disabled {
   font-weight: 500;
 }
 .badge-gray   { background: rgba(16, 24, 40, 0.04); color: #475467; }
-.badge-blue   { background: rgba(11, 165, 236, 0.08); color: #026aa2; }
-.badge-green  { background: #def7ec; color: #03543f; }
-.badge-orange { background: rgba(247, 144, 9, 0.08); color: #7a2e0e; }
+.badge-blue   { background: #eff4ff; color: #155aef; }
+.badge-orange { background: #fffaeb; color: #b54708; }
 .badge-purple { background: #f6f5ff; color: #444ce7; }
+.badge-red    { background: #fef3f2; color: #b42318; }
 
 /* ---------- Segmented control (Dify tab-slider) ---------- */
 .seg {

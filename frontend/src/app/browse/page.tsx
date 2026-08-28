@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { listDocuments, deleteDocument, updateCustomTags } from "@/lib/api";
+import { Icon } from "@/components/icons";
 
 export default function BrowsePage() {
   const [docs, setDocs] = useState<any[]>([]);
@@ -150,8 +151,8 @@ export default function BrowsePage() {
                     {/* 文件关键字: flat, independent attributes (auto-detected) */}
                     {doc.auto_tags && doc.auto_tags.length > 0 && (
                       <div style={{ display: "flex", gap: "6px", marginTop: "10px", flexWrap: "wrap", alignItems: "center" }}>
-                        <span style={{ fontSize: "11px", color: "var(--text-tertiary)", fontWeight: 600, marginRight: "2px" }}>
-                          关键字：
+                        <span style={{ fontSize: "11px", color: "var(--text-tertiary)", fontWeight: 600, marginRight: "2px", display: "inline-flex", alignItems: "center", gap: "3px" }}>
+                          <Icon name="tag" size={11} color="#7c3aed" />关键字：
                         </span>
                         {doc.auto_tags.map((tag: string, i: number) => (
                           <span key={i} className="badge-soft badge-gray">{tag}</span>
@@ -162,13 +163,13 @@ export default function BrowsePage() {
                     {/* Custom keywords (user-added, still flat) */}
                     {doc.custom_tags && doc.custom_tags.length > 0 && (
                       <div style={{ display: "flex", gap: "6px", marginTop: "6px", flexWrap: "wrap", alignItems: "center" }}>
-                        <span style={{ fontSize: "11px", color: "var(--text-tertiary)", fontWeight: 600, marginRight: "2px" }}>
-                          自定义：
+                        <span style={{ fontSize: "11px", color: "var(--text-tertiary)", fontWeight: 600, marginRight: "2px", display: "inline-flex", alignItems: "center", gap: "3px" }}>
+                          <Icon name="tag" size={11} color="#7c3aed" />自定义：
                         </span>
                         {doc.custom_tags.map((tag: string, i: number) => (
                           <span
                             key={i}
-                            className="badge-soft badge-green"
+                            className="badge-soft badge-gray"
                             style={{ cursor: "pointer" }}
                             title="点击移除"
                             onClick={() => handleRemoveTag(doc.id, tag)}
@@ -217,7 +218,7 @@ export default function BrowsePage() {
                           className="btn-sm btn-sm-accent"
                           style={{ marginTop: "6px", paddingLeft: 0 }}
                         >
-                          + 添加标签
+                          <Icon name="tag" size={12} color="#155aef" /> 添加标签
                         </div>
                       )
                     )}
@@ -225,16 +226,16 @@ export default function BrowsePage() {
                   <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
                     {/* PDF type label */}
                     {doc.pdf_type === "text" && (
-                      <span className="badge-soft badge-blue">📝 文字PDF</span>
+                      <span className="badge-soft badge-blue"><Icon name="fileText" size={12} color="#155aef" /> 文字PDF</span>
                     )}
                     {doc.pdf_type === "image" && (
-                      <span className="badge-soft badge-orange">📷 扫描PDF</span>
+                      <span className="badge-soft badge-orange"><Icon name="image" size={12} color="#b54708" /> 扫描PDF</span>
                     )}
-                    <span className={`badge-soft ${doc.indexing_status === "completed" ? "badge-green" : "badge-orange"}`}>
-                      {doc.indexing_status === "completed" ? "已索引" : doc.indexing_status || ""}
+                    <span className={`badge-soft ${doc.indexing_status === "completed" ? "badge-blue" : "badge-orange"}`}>
+                      {doc.indexing_status === "completed" ? <><Icon name="check" size={12} color="#155aef" /> 已索引</> : doc.indexing_status || ""}
                     </span>
                     <button className="btn-sm btn-sm-danger" onClick={() => handleDelete(doc.id)}>
-                      删除
+                      <Icon name="trash" size={12} color="#d92d20" /> 删除
                     </button>
                   </div>
                 </div>
@@ -255,7 +256,7 @@ export default function BrowsePage() {
                       cursor: "default",
                     }}
                   >
-                    📁 {doc.archive_path.join(" → ")}
+                    <Icon name="folder" size={12} color="#444ce7" /> {doc.archive_path.join(" → ")}
                   </span>
                 )}
               </div>

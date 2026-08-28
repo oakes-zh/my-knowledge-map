@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { searchStream } from "@/lib/api";
+import { Icon } from "@/components/icons";
 
 export default function SearchPage() {
   const [query, setQuery] = useState("");
@@ -145,11 +146,10 @@ export default function SearchPage() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: "24px",
             color: "var(--text-tertiary)",
             boxShadow: "var(--shadow-xs)",
           }}>
-            🔍
+            <Icon name="search" size={26} color="#98a2b3" />
           </div>
           <div style={{ color: "var(--text-tertiary)", fontSize: "13px" }}>
             输入问题，从你的知识库中检索答案

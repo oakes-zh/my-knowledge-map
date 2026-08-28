@@ -9,6 +9,7 @@ import {
   deleteArchiveNode,
   deleteDocument,
 } from "@/lib/api";
+import { ICONS, type IconName } from "./icons";
 
 /**
  * ArchiveTree — renders the archive tree (the nested dictionary mapped to the
@@ -121,39 +122,9 @@ function getNodeWidth(name: string, isDoc: boolean, isRoot: boolean, keywordCoun
   return Math.max(w, 56);
 }
 
-// ===== 图标体系：Remix Icon 4.x 官方路径（Dify 同款图标集），24x24 viewBox，单色 =====
-// 全部图标统一取自同一图标集，保证风格一致（线条粗细/圆角/留白完全统一）。
-// 来源: remixicon.com (Apache-2.0)，经 https://api.iconify.design/ri 取回原始 path。
-const ICONS = {
-  // 目录 / 知识库位置
-  folder: "M12.414 5H21a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h7.414zM4 7v12h16V7z",
-  folderAdd: "M12.414 5H21a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h7.414zM4 5v14h16V7h-8.414l-2-2zm7 7V9h2v3h3v2h-3v3h-2v-3H8v-2z",
-  // 文档（默认 / 文字型 / 扫描型）
-  file: "M9 2.003V2h10.998C20.55 2 21 2.455 21 2.992v18.016a.993.993 0 0 1-.993.992H3.993A1 1 0 0 1 3 20.993V8zM5.83 8H9V4.83zM11 4v5a1 1 0 0 1-1 1H5v10h14V4z",
-  fileText: "M21 8v12.993A1 1 0 0 1 20.007 22H3.993A.993.993 0 0 1 3 21.008V2.992C3 2.455 3.449 2 4.002 2h10.995zm-2 1h-5V4H5v16h14zM8 7h3v2H8zm0 4h8v2H8zm0 4h8v2H8z",
-  image: "M2.992 21A.993.993 0 0 1 2 20.007V3.993A1 1 0 0 1 2.992 3h18.016c.548 0 .992.445.992.993v16.014a1 1 0 0 1-.992.993zM20 15V5H4v14L14 9zm0 2.828l-6-6L6.828 19H20zM8 11a2 2 0 1 1 0-4a2 2 0 0 1 0 4",
-  // 关键字标签
-  tag: "m10.904 2.1l9.9 1.414l1.414 9.9l-9.192 9.192a1 1 0 0 1-1.415 0l-9.9-9.9a1 1 0 0 1 0-1.413zm.707 2.122L3.833 12l8.485 8.485l7.779-7.778l-1.061-7.425zm2.122 6.363a2 2 0 1 1 2.828-2.828a2 2 0 0 1-2.828 2.829",
-  // 知识库根节点（数据库）
-  db: "M5 12.5c0 .313.461.858 1.53 1.393C7.914 14.585 9.877 15 12 15s4.086-.415 5.47-1.107c1.069-.535 1.53-1.08 1.53-1.393v-2.171C17.35 11.349 14.827 12 12 12s-5.35-.652-7-1.671zm14 2.829C17.35 16.349 14.827 17 12 17s-5.35-.652-7-1.671V17.5c0 .313.461.858 1.53 1.393C7.914 19.585 9.877 20 12 20s4.086-.415 5.47-1.107c1.069-.535 1.53-1.08 1.53-1.393zM3 17.5v-10C3 5.015 7.03 3 12 3s9 2.015 9 4.5v10c0 2.485-4.03 4.5-9 4.5s-9-2.015-9-4.5m9-7.5c2.123 0 4.086-.415 5.47-1.107C18.539 8.358 19 7.813 19 7.5s-.461-.858-1.53-1.393C16.086 5.415 14.123 5 12 5s-4.086.415-5.47 1.107C5.461 6.642 5 7.187 5 7.5s.461.858 1.53 1.393C7.914 9.585 9.877 10 12 10",
-  // 菜单操作
-  edit: "M6.414 15.89L16.556 5.748l-1.414-1.414L5 14.476v1.414zm.829 2H3v-4.243L14.435 2.212a1 1 0 0 1 1.414 0l2.829 2.829a1 1 0 0 1 0 1.414zM3 19.89h18v2H3z",
-  up: "M13 7.828V20h-2V7.828l-5.364 5.364l-1.414-1.414L12 4l7.778 7.778l-1.414 1.414z",
-  fold: "m11.95 7.95l-1.414 1.414L8 6.828V20H6V6.828L3.466 9.364L2.05 7.95L7 3zm10 8.1L17 21l-4.95-4.95l1.414-1.414l2.537 2.536L16 4h2v13.172l2.536-2.536z",
-  trash: "M17 6h5v2h-2v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V8H2V6h5V3a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1zm1 2H6v12h12zm-9 3h2v6H9zm4 0h2v6h-2zM9 4v2h6V4z",
-  pin: "m13.827 1.69l8.486 8.485l-1.415 1.414l-.707-.707l-4.242 4.243l-.707 3.536l-1.415 1.414l-4.242-4.243l-4.95 4.95l-1.414-1.414l4.95-4.95l-4.243-4.243l1.414-1.414l3.536-.707l4.242-4.243l-.707-.707zm.707 3.536l-4.67 4.67l-2.822.565l6.5 6.5l.564-2.822l4.671-4.67z",
-  // 通用控件
-  close: "m12 10.587l4.95-4.95l1.414 1.414l-4.95 4.95l4.95 4.95l-1.415 1.414l-4.95-4.95l-4.949 4.95l-1.414-1.415l4.95-4.95l-4.95-4.95L7.05 5.638z",
-  fullscreen: "M8 3v2H4v4H2V3zM2 21v-6h2v4h4v2zm20 0h-6v-2h4v-4h2zm0-12h-2V5h-4V3h6z",
-  fullscreenExit: "M18 7h4v2h-6V3h2zM8 9H2V7h4V3h2zm10 8v4h-2v-6h6v2zM8 15v6H6v-4H2v-2z",
-  plus: "M11 11V5h2v6h6v2h-6v6h-2v-6H5v-2z",
-  minus: "M5 11v2h14v-2z",
-  refresh: "M5.463 4.433A9.96 9.96 0 0 1 12 2c5.523 0 10 4.477 10 10c0 2.136-.67 4.116-1.81 5.74L17 12h3A8 8 0 0 0 6.46 6.228zm13.074 15.134A9.96 9.96 0 0 1 12 22C6.477 22 2 17.523 2 12c0-2.136.67-4.116 1.81-5.74L7 12H4a8 8 0 0 0 13.54 5.772z",
-};
-
 // HTML 浮层（详情面板 / 右键菜单 / 弹窗 / 控件按钮）用的内联图标
 function Ico({ name, size = 12, color = "#667085", style }: {
-  name: keyof typeof ICONS;
+  name: IconName;
   size?: number;
   color?: string;
   style?: React.CSSProperties;
@@ -1036,7 +1007,7 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
         <div
           onClick={(e) => e.stopPropagation()}
           style={{
-          position: "absolute", right: "12px", top: "52px", width: "280px",
+          position: "absolute", left: "12px", top: "52px", width: "280px",
           background: "rgba(255,255,255,0.97)", borderRadius: "8px",
           border: "1px solid var(--border)", boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
           padding: "12px 14px", fontSize: "12px", userSelect: "none", zIndex: 5,
@@ -1130,7 +1101,7 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
           <div
             onClick={(e) => e.stopPropagation()}
             style={{
-            position: "absolute", right: "12px", top: "52px", width: "300px", maxHeight: "380px", overflowY: "auto",
+            position: "absolute", left: "12px", top: "52px", width: "300px", maxHeight: "380px", overflowY: "auto",
             background: "rgba(255,255,255,0.97)", borderRadius: "8px",
             border: "1px solid var(--border)", boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
             padding: "12px 14px", fontSize: "12px", userSelect: "none", zIndex: 5,

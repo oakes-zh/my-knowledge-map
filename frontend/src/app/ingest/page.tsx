@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback } from "react";
 import { ingestText, ingestURL, ingestFile } from "@/lib/api";
+import { Icon } from "@/components/icons";
 
 type Tab = "text" | "url" | "file" | "batch";
 
@@ -347,7 +348,9 @@ export default function IngestPage() {
                 directory=""
                 multiple
               />
-              <div style={{ fontSize: "22px", marginBottom: "8px" }}>📁</div>
+              <div style={{ display: "flex", justifyContent: "center", marginBottom: "8px" }}>
+                <Icon name="folder" size={28} color="#98a2b3" />
+              </div>
               <div style={{ fontSize: "14px", fontWeight: 500, color: isDragging ? "var(--primary)" : "var(--text-primary)" }}>
                 {isDragging ? "松手以批量上传" : "点击选择文件夹"}
               </div>
@@ -419,9 +422,9 @@ export default function IngestPage() {
               <div>
                 <div style={{ fontSize: "13px", fontWeight: 500, marginBottom: "8px", display: "flex", gap: "10px", flexWrap: "wrap" }}>
                   <span style={{ color: "var(--text-primary)" }}>入库结果：</span>
-                  <span className="badge-soft badge-green"> ✅ {successCount} 成功</span>
-                  <span className="badge-soft badge-orange"> ⚠️ {dupCount} 重复</span>
-                  {errCount > 0 && <span className="badge-soft badge-red"> ❌ {errCount} 失败</span>}
+                  <span className="badge-soft badge-blue"><Icon name="check" size={12} color="#155aef" /> {successCount} 成功</span>
+                  <span className="badge-soft badge-orange"><Icon name="alert" size={12} color="#b54708" /> {dupCount} 重复</span>
+                  {errCount > 0 && <span className="badge-soft badge-red"><Icon name="closeCircle" size={12} color="#b42318" /> {errCount} 失败</span>}
                 </div>
                 <div style={{
                   maxHeight: "250px",
@@ -445,7 +448,11 @@ export default function IngestPage() {
                         textAlign: "center",
                         fontWeight: 600,
                       }}>
-                        {r.status === "success" ? "✅" : r.status === "duplicate" ? "⚠️" : "❌"}
+                        {r.status === "success"
+                          ? <Icon name="check" size={14} color="#155aef" />
+                          : r.status === "duplicate"
+                            ? <Icon name="alert" size={14} color="#b54708" />
+                            : <Icon name="closeCircle" size={14} color="#b42318" />}
                       </span>
                       <span style={{ flex: 1, color: "var(--text-primary)" }}>{r.filename}</span>
                       <span style={{ color: "var(--text-secondary)" }}>{r.message}</span>
@@ -502,7 +509,7 @@ export default function IngestPage() {
               <div style={{ marginTop: "8px", display: "flex", alignItems: "center", flexWrap: "wrap" }}>
                 <strong>标签:</strong>{" "}
                 {result.tags.map((tag: string, i: number) => (
-                  <span key={i} className="badge-soft badge-green" style={{ marginLeft: i === 0 ? "6px" : 0 }}>{tag}</span>
+                  <span key={i} className="badge-soft badge-gray" style={{ marginLeft: i === 0 ? "6px" : 0 }}>{tag}</span>
                 ))}
               </div>
             )}
@@ -517,7 +524,7 @@ export default function IngestPage() {
       {tab !== "batch" && result && !result.success && (
         <div className="notice notice-warning" style={{ flexDirection: "column", alignItems: "flex-start", padding: "14px 16px" }}>
           <div style={{ fontSize: "14px", fontWeight: 600, marginBottom: "8px" }}>
-            ⚠️ 内容重复
+            <Icon name="alert" size={14} color="#b54708" /> 内容重复
           </div>
           <div style={{ fontSize: "13px" }}>
             {result.message}

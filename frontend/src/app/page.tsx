@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { listDocuments, getArchiveTree, rearchiveDocuments } from "@/lib/api";
 import ArchiveTree from "@/components/ArchiveTree";
+import { Icon } from "@/components/icons";
 
 interface ArchiveTreeNode {
   id: string;
@@ -92,14 +93,14 @@ export default function DashboardPage() {
         <div className="card">
           <div style={{ fontSize: "13px", color: "var(--text-secondary)" }}>状态</div>
           <div style={{ marginTop: "10px" }}>
-            <span className="badge-soft badge-green">
+            <span className="badge-soft badge-blue">
               <span style={{
                 display: "inline-block",
                 width: "6px",
                 height: "6px",
                 borderRadius: "50%",
-                background: "var(--success)",
-                boxShadow: "0 0 0 3px rgba(23, 178, 106, 0.25)",
+                background: "var(--primary)",
+                boxShadow: "0 0 0 3px rgba(21, 90, 239, 0.18)",
               }} />
               运行中
             </span>
@@ -119,7 +120,7 @@ export default function DashboardPage() {
               onClick={() => handleRearchive(false)}
               title="为每个文件重新归纳 3-4 级归档路径（结合主旨/概要，从根目录开枝散叶）"
             >
-              🔄 重新归档（3-4 级）
+              <Icon name="refresh" size={12} color="#155aef" /> 重新归档（3-4 级）
             </button>
             <button
               className="btn-sm btn-sm-tertiary"
@@ -132,7 +133,7 @@ export default function DashboardPage() {
               className="btn-sm btn-sm-secondary"
               onClick={loadTree}
             >
-              刷新
+              <Icon name="refresh" size={12} color="#344054" /> 刷新
             </button>
           </div>
         </div>
@@ -207,8 +208,8 @@ export default function DashboardPage() {
                   {doc.word_count || 0} 字 · {doc.hit_count || 0} 次检索
                 </div>
               </div>
-              <span className={`badge-soft ${doc.indexing_status === "completed" ? "badge-green" : "badge-orange"}`}>
-                {doc.indexing_status === "completed" ? "已索引" : doc.indexing_status || "处理中"}
+              <span className={`badge-soft ${doc.indexing_status === "completed" ? "badge-blue" : "badge-orange"}`}>
+                {doc.indexing_status === "completed" ? <><Icon name="check" size={12} color="#155aef" /> 已索引</> : doc.indexing_status || "处理中"}
               </span>
             </div>
           ))}
