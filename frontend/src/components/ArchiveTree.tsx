@@ -107,29 +107,37 @@ function getNodeWidth(name: string, isDoc: boolean, isRoot: boolean, keywordCoun
   return base * 2;
 }
 
-// ===== 极简纯色图标（12x12 viewBox，单色填充，无渐变/多色 emoji）=====
-// 约定：图谱中除「知识库位置（📁 归档目录）」沿用文件夹图标外，
-// 其余图标一律使用纯色、简约、极简风格的 SVG 图标。
+// ===== 图标体系：Remix Icon 4.x 官方路径（Dify 同款图标集），24x24 viewBox，单色 =====
+// 全部图标统一取自同一图标集，保证风格一致（线条粗细/圆角/留白完全统一）。
+// 来源: remixicon.com (Apache-2.0)，经 https://api.iconify.design/ri 取回原始 path。
 const ICONS = {
-  // 文档（含折角剪影；text 型叠加白色双横线，image 型叠加白色圆点）
-  file: "M7 .9l3.4 3.4v6.5a1.2 1.2 0 0 1-1.2 1.2H2.8a1.2 1.2 0 0 1-1.2-1.2V2.1A1.2 1.2 0 0 1 2.8.9H7z",
+  // 目录 / 知识库位置
+  folder: "M12.414 5H21a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h7.414zM4 7v12h16V7z",
+  folderAdd: "M12.414 5H21a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h7.414zM4 5v14h16V7h-8.414l-2-2zm7 7V9h2v3h3v2h-3v3h-2v-3H8v-2z",
+  // 文档（默认 / 文字型 / 扫描型）
+  file: "M9 2.003V2h10.998C20.55 2 21 2.455 21 2.992v18.016a.993.993 0 0 1-.993.992H3.993A1 1 0 0 1 3 20.993V8zM5.83 8H9V4.83zM11 4v5a1 1 0 0 1-1 1H5v10h14V4z",
+  fileText: "M21 8v12.993A1 1 0 0 1 20.007 22H3.993A.993.993 0 0 1 3 21.008V2.992C3 2.455 3.449 2 4.002 2h10.995zm-2 1h-5V4H5v16h14zM8 7h3v2H8zm0 4h8v2H8zm0 4h8v2H8z",
+  image: "M2.992 21A.993.993 0 0 1 2 20.007V3.993A1 1 0 0 1 2.992 3h18.016c.548 0 .992.445.992.993v16.014a1 1 0 0 1-.992.993zM20 15V5H4v14L14 9zm0 2.828l-6-6L6.828 19H20zM8 11a2 2 0 1 1 0-4a2 2 0 0 1 0 4",
   // 关键字标签
-  tag: "M1 1h5.3l4.7 4.7-5.3 5.3L1 7.7V1z",
-  // 知识库（数据库层叠剪影）
-  db: "M2 .6h8a1.3 1.3 0 0 1 0 2.6H2A1.3 1.3 0 0 1 2 .6z M2 4.7h8a1.3 1.3 0 0 1 0 2.6H2a1.3 1.3 0 0 1 0-2.6z M2 8.8h8a1.3 1.3 0 0 1 0 2.6H2a1.3 1.3 0 0 1 0-2.6z",
-  // 重命名（铅笔）
-  edit: "M8.2 1l2.8 2.8-7.6 7.6L0 12l.6-3.4L8.2 1z",
-  // 移动到根目录（上箭头）
-  up: "M6 .8l4.6 4.6H7.4v5.8H4.6V5.4H1.4L6 .8z",
-  // 删除（垃圾桶）
-  trash: "M4.3 .9h3.4l.5 1.5h2.3v1.4H1.5V2.4h2.3l.5-1.5z M2.6 4.2h6.8l-.6 6.2a.9.9 0 0 1-.9.8H4.1a.9.9 0 0 1-.9-.8L2.6 4.2z",
-  // 手动创建标记（图钉）
-  pin: "M6 .8a3.4 3.4 0 0 1 3.4 3.4c0 1.25-.68 2.35-1.7 2.95V8.5H4.3V7.15A3.4 3.4 0 0 1 6 .8z M5.2 9.5h1.6V12H5.2z",
-  // 折叠/展开（上下双三角）
-  fold: "M6 .8l3.2 3.8H2.8L6 .8z M6 11.2L2.8 7.4h6.4L6 11.2z",
+  tag: "m10.904 2.1l9.9 1.414l1.414 9.9l-9.192 9.192a1 1 0 0 1-1.415 0l-9.9-9.9a1 1 0 0 1 0-1.413zm.707 2.122L3.833 12l8.485 8.485l7.779-7.778l-1.061-7.425zm2.122 6.363a2 2 0 1 1 2.828-2.828a2 2 0 0 1-2.828 2.829",
+  // 知识库根节点（数据库）
+  db: "M5 12.5c0 .313.461.858 1.53 1.393C7.914 14.585 9.877 15 12 15s4.086-.415 5.47-1.107c1.069-.535 1.53-1.08 1.53-1.393v-2.171C17.35 11.349 14.827 12 12 12s-5.35-.652-7-1.671zm14 2.829C17.35 16.349 14.827 17 12 17s-5.35-.652-7-1.671V17.5c0 .313.461.858 1.53 1.393C7.914 19.585 9.877 20 12 20s4.086-.415 5.47-1.107c1.069-.535 1.53-1.08 1.53-1.393zM3 17.5v-10C3 5.015 7.03 3 12 3s9 2.015 9 4.5v10c0 2.485-4.03 4.5-9 4.5s-9-2.015-9-4.5m9-7.5c2.123 0 4.086-.415 5.47-1.107C18.539 8.358 19 7.813 19 7.5s-.461-.858-1.53-1.393C16.086 5.415 14.123 5 12 5s-4.086.415-5.47 1.107C5.461 6.642 5 7.187 5 7.5s.461.858 1.53 1.393C7.914 9.585 9.877 10 12 10",
+  // 菜单操作
+  edit: "M6.414 15.89L16.556 5.748l-1.414-1.414L5 14.476v1.414zm.829 2H3v-4.243L14.435 2.212a1 1 0 0 1 1.414 0l2.829 2.829a1 1 0 0 1 0 1.414zM3 19.89h18v2H3z",
+  up: "M13 7.828V20h-2V7.828l-5.364 5.364l-1.414-1.414L12 4l7.778 7.778l-1.414 1.414z",
+  fold: "m11.95 7.95l-1.414 1.414L8 6.828V20H6V6.828L3.466 9.364L2.05 7.95L7 3zm10 8.1L17 21l-4.95-4.95l1.414-1.414l2.537 2.536L16 4h2v13.172l2.536-2.536z",
+  trash: "M17 6h5v2h-2v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V8H2V6h5V3a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1zm1 2H6v12h12zm-9 3h2v6H9zm4 0h2v6h-2zM9 4v2h6V4z",
+  pin: "m13.827 1.69l8.486 8.485l-1.415 1.414l-.707-.707l-4.242 4.243l-.707 3.536l-1.415 1.414l-4.242-4.243l-4.95 4.95l-1.414-1.414l4.95-4.95l-4.243-4.243l1.414-1.414l3.536-.707l4.242-4.243l-.707-.707zm.707 3.536l-4.67 4.67l-2.822.565l6.5 6.5l.564-2.822l4.671-4.67z",
+  // 通用控件
+  close: "m12 10.587l4.95-4.95l1.414 1.414l-4.95 4.95l4.95 4.95l-1.415 1.414l-4.95-4.95l-4.949 4.95l-1.414-1.415l4.95-4.95l-4.95-4.95L7.05 5.638z",
+  fullscreen: "M8 3v2H4v4H2V3zM2 21v-6h2v4h4v2zm20 0h-6v-2h4v-4h2zm0-12h-2V5h-4V3h6z",
+  fullscreenExit: "M18 7h4v2h-6V3h2zM8 9H2V7h4V3h2zm10 8v4h-2v-6h6v2zM8 15v6H6v-4H2v-2z",
+  plus: "M11 11V5h2v6h6v2h-6v6h-2v-6H5v-2z",
+  minus: "M5 11v2h14v-2z",
+  refresh: "M5.463 4.433A9.96 9.96 0 0 1 12 2c5.523 0 10 4.477 10 10c0 2.136-.67 4.116-1.81 5.74L17 12h3A8 8 0 0 0 6.46 6.228zm13.074 15.134A9.96 9.96 0 0 1 12 22C6.477 22 2 17.523 2 12c0-2.136.67-4.116 1.81-5.74L7 12H4a8 8 0 0 0 13.54 5.772z",
 };
 
-// HTML 浮层（详情面板 / 右键菜单 / 弹窗）用的内联图标
+// HTML 浮层（详情面板 / 右键菜单 / 弹窗 / 控件按钮）用的内联图标
 function Ico({ name, size = 12, color = "#667085", style }: {
   name: keyof typeof ICONS;
   size?: number;
@@ -137,7 +145,7 @@ function Ico({ name, size = 12, color = "#667085", style }: {
   style?: React.CSSProperties;
 }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 12 12"
+    <svg width={size} height={size} viewBox="0 0 24 24"
       style={{ flexShrink: 0, display: "inline-block", verticalAlign: "middle", ...style }}>
       <path d={ICONS[name]} fill={color} />
     </svg>
@@ -929,17 +937,11 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
 
                 {isDoc ? (
                   <g style={{ pointerEvents: "none" }}>
-                    {/* 文档类型图标：纯色极简剪影（text=双横线, image=圆点） */}
-                    <g transform={`translate(${cx + 9}, ${cy + nh / 2 - 4.5}) scale(0.75)`}>
-                      <path d={ICONS.file} fill={textColor} />
-                      {node.data.pdf_type === "image" ? (
-                        <circle cx={5.7} cy={5.4} r={1.6} fill={bgColor} />
-                      ) : node.data.pdf_type === "text" ? (
-                        <>
-                          <rect x={3.4} y={4.7} width={5.4} height={0.9} rx={0.45} fill={bgColor} />
-                          <rect x={3.4} y={6.7} width={5.4} height={0.9} rx={0.45} fill={bgColor} />
-                        </>
-                      ) : null}
+                    {/* 文档类型图标：Remix file-text / image / file（文字型 / 扫描型 / 默认） */}
+                    <g transform={`translate(${cx + 8}, ${cy + nh / 2 - 5.2}) scale(0.44)`}>
+                      <path
+                        d={node.data.pdf_type === "image" ? ICONS.image : node.data.pdf_type === "text" ? ICONS.fileText : ICONS.file}
+                        fill={textColor} />
                     </g>
                     <text x={cx + NODE_PADDING_X_DOC + 20} y={cy + nh / 2} dy="0.35em"
                       style={{ fontSize: `${fontSize}px`, fill: textColor, fontWeight: 500, userSelect: "none" }}>
@@ -947,10 +949,9 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
                     </text>
                     {(node.data.keywords || []).length > 0 && (
                       <>
-                        {/* 关键字数量：纯色标签图标 + 数字 */}
-                        <g transform={`translate(${cx + nw - NODE_PADDING_X_DOC - 13}, ${cy + nh / 2 - 4}) scale(0.66)`}>
+                        {/* 关键字数量：Remix price-tag 图标 + 数字 */}
+                        <g transform={`translate(${cx + nw - NODE_PADDING_X_DOC - 21}, ${cy + nh / 2 - 4}) scale(0.33)`}>
                           <path d={ICONS.tag} fill={COLORS.keyword} />
-                          <circle cx={3.5} cy={3.5} r={1} fill={bgColor} />
                         </g>
                         <text x={cx + nw - NODE_PADDING_X_DOC} y={cy + nh / 2} dy="0.35em" textAnchor="end"
                           style={{ fontSize: "8px", fill: COLORS.keyword, fontWeight: 700, userSelect: "none" }}>
@@ -961,15 +962,13 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
                   </g>
                 ) : (
                   <g style={{ pointerEvents: "none" }}>
-                    {isRoot && (
-                      <g transform={`translate(${labelX - estimateTextWidth(node.data.name, fontSize) / 2 - 14}, ${cy + nh / 2 - 4.5}) scale(0.75)`}>
-                        {/* 根节点「知识库」：纯色数据库图标 */}
-                        <path d={ICONS.db} fill={COLORS.rootText} />
-                      </g>
-                    )}
+                    {/* 根节点=Remix database；目录（知识库位置）=Remix folder */}
+                    <g transform={`translate(${labelX - estimateTextWidth(node.data.name, fontSize) / 2 - 15}, ${cy + nh / 2 - 5}) scale(0.42)`}>
+                      <path d={isRoot ? ICONS.db : ICONS.folder} fill={isRoot ? COLORS.rootText : textColor} />
+                    </g>
                     <text x={labelX} y={cy + nh / 2} dy="0.35em" textAnchor="middle"
                       style={{ fontSize: `${fontSize}px`, fill: textColor, fontWeight: isRoot ? 700 : 600, userSelect: "none" }}>
-                      {isRoot ? "" : "📁 "}{node.data.name}
+                      {node.data.name}
                     </text>
                     {isCat && docCount > 0 && (
                       <text x={cx + nw - 20} y={cy + nh / 2} dy="0.35em" textAnchor="end"
@@ -983,10 +982,9 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
                 {isCollapsible && (
                   <g style={{ pointerEvents: "none" }}>
                     <circle cx={cx + nw - 4} cy={cy + nh / 2} r={8} fill="white" stroke={borderColor} strokeWidth={1.5} />
-                    <text x={cx + nw - 4} y={cy + nh / 2} textAnchor="middle" dy="0.35em"
-                      style={{ fontSize: "10px", fill: borderColor, fontWeight: 700, userSelect: "none" }}>
-                      {collapsedNodes.has(nodeKey) ? "+" : "−"}
-                    </text>
+                    <g transform={`translate(${cx + nw - 4 - 5}, ${cy + nh / 2 - 5}) scale(0.42)`}>
+                      <path d={collapsedNodes.has(nodeKey) ? ICONS.plus : ICONS.minus} fill={borderColor} />
+                    </g>
                   </g>
                 )}
               </g>
@@ -1031,8 +1029,8 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
               {selectedDoc.name}
             </span>
             <button onClick={() => setSelectedDoc(null)}
-              style={{ border: "none", background: "transparent", cursor: "pointer", color: "#98a2b3", fontSize: "14px" }}>
-              ✕
+              style={{ border: "none", background: "transparent", cursor: "pointer", color: "#98a2b3", display: "flex", alignItems: "center" }}>
+              <Ico name="close" size={13} />
             </button>
           </div>
 
@@ -1050,8 +1048,10 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
                     fontSize: "11px", padding: "2px 8px", borderRadius: "4px",
                     background: COLORS.categoryLight, color: COLORS.category,
                     border: `1px solid ${COLORS.category}33`, lineHeight: "18px",
+                    display: "inline-flex", alignItems: "center", gap: "4px",
                   }}>
-                    📁 {level}
+                    <Ico name="folder" size={11} color={COLORS.category} />
+                    {level}
                   </span>
                   {i < arr.length - 1 && <span style={{ color: "#98a2b3" }}>→</span>}
                 </span>
@@ -1120,7 +1120,8 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
           }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
               <span style={{ fontWeight: 600, fontSize: "13px", color: COLORS.category, display: "flex", alignItems: "center", gap: "6px" }}>
-                📁 {data.name}
+                <Ico name="folder" size={13} color={COLORS.category} />
+                {data.name}
                 <span style={{
                   fontSize: "10px", padding: "1px 6px", borderRadius: "3px",
                   background: COLORS.categoryLight, color: COLORS.category, border: `1px solid ${COLORS.category}33`,
@@ -1129,8 +1130,8 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
                 </span>
               </span>
               <button onClick={() => setSelectedCategoryId(null)}
-                style={{ border: "none", background: "transparent", cursor: "pointer", color: "#98a2b3", fontSize: "14px" }}>
-                ✕
+                style={{ border: "none", background: "transparent", cursor: "pointer", color: "#98a2b3", display: "flex", alignItems: "center" }}>
+                <Ico name="close" size={13} />
               </button>
             </div>
 
@@ -1168,7 +1169,10 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
                     onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = COLORS.categoryLight; }}
                     onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "#FFFFFF"; }}
                   >
-                    <span style={{ color: COLORS.category, fontWeight: 500 }}>📁 {s.name}</span>
+                    <span style={{ color: COLORS.category, fontWeight: 500, display: "flex", alignItems: "center", gap: "4px" }}>
+                      <Ico name="folder" size={11} color={COLORS.category} />
+                      {s.name}
+                    </span>
                     <span style={{ fontSize: "11px", color: "#98a2b3" }}>{s.doc_count ?? 0} 个文件 ›</span>
                   </div>
                 ))}
@@ -1236,10 +1240,10 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
       {/* Controls */}
       <div style={{ position: "absolute", bottom: "12px", right: "12px", display: "flex", flexDirection: "column", gap: "4px" }}>
         {[
-          { label: "⛶", title: isFullscreen ? "退出全屏" : "全屏", action: () => setIsFullscreen(f => !f) },
-          { label: "+", title: "放大", action: () => setTransform(p => ({ ...p, scale: Math.min(p.scale * 1.3, 5) })) },
-          { label: "−", title: "缩小", action: () => setTransform(p => ({ ...p, scale: Math.max(p.scale / 1.3, 0.1) })) },
-          { label: "⊞", title: "重置视图", action: () => {
+          { label: <Ico name={isFullscreen ? "fullscreenExit" : "fullscreen"} size={14} />, title: isFullscreen ? "退出全屏" : "全屏", action: () => setIsFullscreen(f => !f) },
+          { label: <Ico name="plus" size={14} />, title: "放大", action: () => setTransform(p => ({ ...p, scale: Math.min(p.scale * 1.3, 5) })) },
+          { label: <Ico name="minus" size={14} />, title: "缩小", action: () => setTransform(p => ({ ...p, scale: Math.max(p.scale / 1.3, 0.1) })) },
+          { label: <Ico name="refresh" size={14} />, title: "重置视图", action: () => {
             if (!containerRef.current || !root) return;
             const rect = containerRef.current.getBoundingClientRect();
             let minY = Infinity, maxY = -Infinity, minX = Infinity, maxX = -Infinity;
@@ -1292,7 +1296,7 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
                 ? <Ico name="file" size={12} color="#667085" />
                 : contextMenu.kind === "root"
                   ? <Ico name="db" size={12} color="#155aef" />
-                  : <span>📁</span>}
+                  : <Ico name="folder" size={12} color={COLORS.category} />}
             </span>
             <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{contextMenu.name}</span>
             {contextMenu.pinned && <span title="手动创建的目录（不会被自动清理）"><Ico name="pin" size={11} color="#f79009" /></span>}
@@ -1304,7 +1308,7 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
                 <Ico name="edit" size={11} /> 重命名
               </MenuItem>
               <MenuItem onClick={() => { setMenuDialog({ mode: "create", nodeId: contextMenu.nodeId }); setMenuInput(""); }}>
-                <span>📁+</span> 新建子目录
+                <Ico name="folderAdd" size={11} /> 新建子目录
               </MenuItem>
               <MenuItem onClick={handleMenuMoveToRoot}><Ico name="up" size={11} /> 移动到根目录</MenuItem>
               <MenuItem onClick={handleMenuToggleCollapse}><Ico name="fold" size={11} /> 折叠 / 展开</MenuItem>
@@ -1316,7 +1320,7 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
           )}
           {contextMenu.kind === "root" && (
             <MenuItem onClick={() => { setMenuDialog({ mode: "create", nodeId: "root" }); setMenuInput(""); }}>
-              📁+ 新建根目录分类
+              <Ico name="folderAdd" size={11} /> 新建根目录分类
             </MenuItem>
           )}
 
@@ -1349,7 +1353,7 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
           <div style={{ fontSize: "11px", color: "#667085", marginBottom: "6px", display: "flex", alignItems: "center", gap: "5px" }}>
             {menuDialog.mode === "rename"
               ? <><Ico name="edit" size={11} /> 重命名目录</>
-              : <><span>📁+</span> 新建子目录</>}
+              : <><Ico name="folderAdd" size={11} /> 新建子目录</>}
           </div>
           <input
             autoFocus
