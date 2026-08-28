@@ -72,15 +72,23 @@ const CATEGORY_DEPTH_COLORS = ["#2970ff", "#0ba5ec", "#444ce7", "#7c3aed", "#693
 const LEVEL_LABELS = ["根", "领域", "主题", "分类", "具体", "更细"];
 
 const NODE_HEIGHT = 24;
-const NODE_PADDING_X = 9;
-const NODE_PADDING_X_DOC = 7;
-const LEVEL_GAP = 120; // vertical spacing between levels
-const SIBLING_GAP = 37;
+const LEVEL_GAP = 120; // 层级间纵向间距
+const SIBLING_GAP = 37; // 同级节点横向间距
 // 每深入一层，节点统一向右平移的缩进量（胶囊变宽后，为层级间连线预留宽度）
 const LEVEL_INDENT = 36;
 const FONT_SIZE = 8;
 const FONT_SIZE_DOC = 7;
 const MOVE_THRESHOLD = 6;
+
+// ===== 胶囊排版统一约定：图标/文字/徽标 左对齐，间距一致 =====
+const CAP_LEFT_PAD = 9;    // 胶囊左留白
+const CAP_ICON = 10;       // 主图标渲染尺寸 (px)
+const CAP_GAP = 5;         // 图标 ↔ 文字 间距
+const CAP_RIGHT_PAD = 9;   // 胶囊右留白
+const CAP_TAG = 8;         // 关键字标签小图标尺寸 (px)
+const ICON_SCALE = CAP_ICON / 24;
+const TAG_SCALE = CAP_TAG / 24;
+const DOC_NAME_MAX = 11;   // 文档名显示截断长度
 
 function estimateTextWidth(text: string, fontSize: number): number {
   let w = 0;
@@ -91,20 +99,26 @@ function estimateTextWidth(text: string, fontSize: number): number {
   return w;
 }
 
+function truncateName(name: string, max: number): string {
+  return name.length > max ? name.slice(0, max) + "…" : name;
+}
+
+// 宽度严格按「实际渲染内容」计算，避免胶囊留白、文字与徽标错位。
 function getNodeWidth(name: string, isDoc: boolean, isRoot: boolean, keywordCount: number = 0): number {
   const fontSize = isDoc ? FONT_SIZE_DOC : isRoot ? FONT_SIZE + 1 : FONT_SIZE;
-  const textW = estimateTextWidth(name, fontSize);
-  const badgeW = keywordCount > 0 ? 18 : 0;
-  if (isDoc) {
-    return Math.max(textW + NODE_PADDING_X_DOC * 2 + 40 + badgeW, 60);
+  const display = isDoc ? truncateName(name, DOC_NAME_MAX) : name;
+  const textW = estimateTextWidth(display, fontSize);
+  // 左：留白 + 图标 + 间距 + 文字；右：留白
+  let w = CAP_LEFT_PAD + CAP_ICON + CAP_GAP + textW + CAP_RIGHT_PAD;
+  if (isDoc && keywordCount > 0) {
+    // 右侧关键字徽标：间距 + 标签图标 + 间距 + 数字
+    const countW = String(keywordCount).length * 4.5;
+    w += CAP_GAP + CAP_TAG + 3 + countW;
   }
-  if (isRoot) {
-    return Math.max(textW + NODE_PADDING_X * 2, 90);
+  if (!isDoc && !isRoot) {
+    w += 24; // 目录：右侧容纳「文件数 + 折叠开关」
   }
-  // 文件夹胶囊：右侧需要容纳「文件数徽标 + 折叠开关」，原先右侧拥挤；
-  // 按要求扩大到原来的两倍宽。
-  const base = Math.max(textW + NODE_PADDING_X * 2, 60);
-  return base * 2;
+  return Math.max(w, 56);
 }
 
 // ===== 图标体系：Remix Icon 4.x 官方路径（Dify 同款图标集），24x24 viewBox，单色 =====
@@ -874,18 +888,21 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
             }
 
             const fontSize = isDoc ? FONT_SIZE_DOC : isRoot ? FONT_SIZE + 1 : FONT_SIZE;
-            const nw = getNodeWidth(node.data.name, isDoc, isRoot, node.data.keywords?.length || 0);
+            const nw = getNodeWidth(node.data.name, isDoc, isRoot, (node.data.keywords || []).length);
             const nh = NODE_HEIGHT;
-            // top-down: cx = sibling position (horizontal), cy = depth (vertical).
-            // 层级右缩进：每深入一层，节点统一向右平移 LEVEL_INDENT。
+            // 左→右树：cx 为横向位置（层级加深向右），cy 为纵向位置（同级上下排布）。
             const levelShift = node.depth * LEVEL_INDENT;
             const cx = node.y + levelShift;
             const cy = node.x - nh / 2;
             const docCount = isCat ? (node.data.doc_count ?? docCountForNode(node)) : 0;
-            // 文件夹胶囊：只在右侧加宽（base 为原宽，整宽 = base*2）。
-            // 名称保持在左侧 base 区域居中（cx + nw/4 = cx + base/2），
-            // 右侧扩展区留给「文件数 + 折叠开关」，左缘位置不变。
-            const labelX = isCat ? cx + nw / 4 : cx + nw / 2;
+            const kwCount = (node.data.keywords || []).length;
+            const displayName = isDoc ? truncateName(node.data.name, DOC_NAME_MAX) : node.data.name;
+            // 排版基准：图标左上角、文字起始 x 均由左对齐规则推算，保证三者间距一致。
+            const iconX = cx + CAP_LEFT_PAD;
+            const iconY = cy + nh / 2 - CAP_ICON / 2;
+            const textX = iconX + CAP_ICON + CAP_GAP;
+            const tagRight = cx + nw - CAP_RIGHT_PAD;
+            const tagLeft = tagRight - String(kwCount).length * 4.5 - 3 - CAP_TAG;
 
             return (
               <g
@@ -938,24 +955,24 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
                 {isDoc ? (
                   <g style={{ pointerEvents: "none" }}>
                     {/* 文档类型图标：Remix file-text / image / file（文字型 / 扫描型 / 默认） */}
-                    <g transform={`translate(${cx + 8}, ${cy + nh / 2 - 5.2}) scale(0.44)`}>
+                    <g transform={`translate(${iconX}, ${iconY}) scale(${ICON_SCALE})`}>
                       <path
                         d={node.data.pdf_type === "image" ? ICONS.image : node.data.pdf_type === "text" ? ICONS.fileText : ICONS.file}
                         fill={textColor} />
                     </g>
-                    <text x={cx + NODE_PADDING_X_DOC + 20} y={cy + nh / 2} dy="0.35em"
+                    <text x={textX} y={cy + nh / 2} dy="0.35em"
                       style={{ fontSize: `${fontSize}px`, fill: textColor, fontWeight: 500, userSelect: "none" }}>
-                      {node.data.name.length > 11 ? node.data.name.slice(0, 11) + "…" : node.data.name}
+                      {displayName}
                     </text>
-                    {(node.data.keywords || []).length > 0 && (
+                    {kwCount > 0 && (
                       <>
-                        {/* 关键字数量：Remix price-tag 图标 + 数字 */}
-                        <g transform={`translate(${cx + nw - NODE_PADDING_X_DOC - 21}, ${cy + nh / 2 - 4}) scale(0.33)`}>
+                        {/* 关键字数量：Remix price-tag 图标 + 数字（右对齐） */}
+                        <g transform={`translate(${tagLeft}, ${cy + nh / 2 - CAP_TAG / 2}) scale(${TAG_SCALE})`}>
                           <path d={ICONS.tag} fill={COLORS.keyword} />
                         </g>
-                        <text x={cx + nw - NODE_PADDING_X_DOC} y={cy + nh / 2} dy="0.35em" textAnchor="end"
+                        <text x={tagRight} y={cy + nh / 2} dy="0.35em" textAnchor="end"
                           style={{ fontSize: "8px", fill: COLORS.keyword, fontWeight: 700, userSelect: "none" }}>
-                          {(node.data.keywords || []).length}
+                          {kwCount}
                         </text>
                       </>
                     )}
@@ -963,15 +980,15 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
                 ) : (
                   <g style={{ pointerEvents: "none" }}>
                     {/* 根节点=Remix database；目录（知识库位置）=Remix folder */}
-                    <g transform={`translate(${labelX - estimateTextWidth(node.data.name, fontSize) / 2 - 15}, ${cy + nh / 2 - 5}) scale(0.42)`}>
+                    <g transform={`translate(${iconX}, ${iconY}) scale(${ICON_SCALE})`}>
                       <path d={isRoot ? ICONS.db : ICONS.folder} fill={isRoot ? COLORS.rootText : textColor} />
                     </g>
-                    <text x={labelX} y={cy + nh / 2} dy="0.35em" textAnchor="middle"
+                    <text x={textX} y={cy + nh / 2} dy="0.35em"
                       style={{ fontSize: `${fontSize}px`, fill: textColor, fontWeight: isRoot ? 700 : 600, userSelect: "none" }}>
                       {node.data.name}
                     </text>
                     {isCat && docCount > 0 && (
-                      <text x={cx + nw - 20} y={cy + nh / 2} dy="0.35em" textAnchor="end"
+                      <text x={cx + nw - 16} y={cy + nh / 2} dy="0.35em" textAnchor="end"
                         style={{ fontSize: "8px", fill: "#98a2b3", fontWeight: 600, userSelect: "none" }}>
                         {docCount}
                       </text>
