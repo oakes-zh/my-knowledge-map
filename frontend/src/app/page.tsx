@@ -93,14 +93,14 @@ export default function DashboardPage() {
         <div className="card">
           <div style={{ fontSize: "13px", color: "var(--text-secondary)" }}>状态</div>
           <div style={{ marginTop: "10px" }}>
-            <span className="badge-soft badge-gray">
+            <span className="badge-soft badge-success">
               <span style={{
                 display: "inline-block",
                 width: "6px",
                 height: "6px",
                 borderRadius: "50%",
-                background: "#667085",
-                boxShadow: "0 0 0 3px rgba(102, 112, 133, 0.18)",
+                background: "#34c759",
+                boxShadow: "0 0 0 3px rgba(52, 199, 89, 0.2)",
               }} />
               运行中
             </span>
@@ -208,8 +208,8 @@ export default function DashboardPage() {
                   {doc.word_count || 0} 字 · {doc.hit_count || 0} 次检索
                 </div>
               </div>
-              <span className={`badge-soft ${doc.indexing_status === "completed" ? "badge-gray" : "badge-orange"}`}>
-                {doc.indexing_status === "completed" ? <><Icon name="check" size={12} color="#667085" /> 已索引</> : doc.indexing_status || "处理中"}
+              <span className={`badge-soft ${doc.indexing_status === "completed" ? "badge-success" : "badge-orange"}`}>
+                {doc.indexing_status === "completed" ? <><Icon name="check" size={12} color="#34c759" /> 已索引</> : doc.indexing_status || "处理中"}
               </span>
             </div>
           ))}

@@ -231,8 +231,8 @@ export default function BrowsePage() {
                     {doc.pdf_type === "image" && (
                       <span className="badge-soft badge-gray"><Icon name="image" size={12} color="#667085" /> 扫描PDF</span>
                     )}
-                    <span className={`badge-soft ${doc.indexing_status === "completed" ? "badge-gray" : "badge-orange"}`}>
-                      {doc.indexing_status === "completed" ? <><Icon name="check" size={12} color="#667085" /> 已索引</> : doc.indexing_status || ""}
+                    <span className={`badge-soft ${doc.indexing_status === "completed" ? "badge-success" : "badge-orange"}`}>
+                      {doc.indexing_status === "completed" ? <><Icon name="check" size={12} color="#34c759" /> 已索引</> : doc.indexing_status || ""}
                     </span>
                     <button className="btn-sm btn-sm-danger" onClick={() => handleDelete(doc.id)}>
                       <Icon name="trash" size={12} color="#d92d20" /> 删除

@@ -259,6 +259,7 @@ input:disabled, textarea:disabled {
   font-weight: 500;
 }
 .badge-gray   { background: rgba(16, 24, 40, 0.04); color: #475467; }
+.badge-success { background: #f2f4f7; color: #34c759; }
 .badge-orange { background: #fffaeb; color: #b54708; }
 .badge-red    { background: #fef3f2; color: #b42318; }
 
