@@ -171,3 +171,53 @@ export async function searchStream(
     onError(e.message);
   }
 }
+
+export async function searchScopedStream(
+  query: string,
+  docIds: string[],
+  scopeName: string,
+  onChunk: (text: string) => void,
+  onDone: () => void,
+  onError: (err: string) => void,
+) {
+  try {
+    const resp = await fetch(`${API_BASE}/search/scoped/stream`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query, doc_ids: docIds, scope_name: scopeName }),
+    });
+
+    const reader = resp.body?.getReader();
+    const decoder = new TextDecoder();
+
+    if (!reader) return;
+
+    let buffer = "";
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() || "";
+
+      for (const line of lines) {
+        if (line.startsWith("data: ")) {
+          try {
+            const data = JSON.parse(line.slice(6));
+            if (data.error) {
+              onError(data.error);
+            } else if (data.answer) {
+              onChunk(data.answer);
+            }
+          } catch {
+            // partial JSON, skip
+          }
+        }
+      }
+    }
+    onDone();
+  } catch (e: any) {
+    onError(e.message);
+  }
+}

@@ -81,6 +81,38 @@ class DifyClient:
                 return {"success": True, "document_id": document_id}
             return resp.json()
 
+    async def retrieve(self, query: str, top_k: int = 20) -> dict:
+        """Retrieve the most relevant segments for a query (Dify retrieve API).
+
+        Each returned record carries ``segment`` (with ``document_id`` and
+        ``document``), so callers can filter results to a specific document set.
+        """
+        url = f"{self.base_url}/datasets/{self.dataset_id}/retrieve"
+        headers = {"Authorization": f"Bearer {self.knowledge_key}"}
+        payload = {
+            "query": query,
+            "retrieval_model": {
+                "search_method": "hybrid_search",
+                "reranking_enable": False,
+                "top_k": top_k,
+                "score_threshold_enabled": False,
+            },
+        }
+        async with httpx.AsyncClient(timeout=60) as client:
+            resp = await client.post(url, json=payload, headers=headers)
+            resp.raise_for_status()
+            return resp.json()
+
+    async def list_document_segments(self, document_id: str, limit: int = 50) -> dict:
+        """List the segments (chunks) of a single document."""
+        url = f"{self.base_url}/datasets/{self.dataset_id}/documents/{document_id}/segments"
+        headers = {"Authorization": f"Bearer {self.knowledge_key}"}
+        params = {"page": 1, "limit": limit}
+        async with httpx.AsyncClient(timeout=60) as client:
+            resp = await client.get(url, headers=headers, params=params)
+            resp.raise_for_status()
+            return resp.json()
+
     # ---------- Chat API ----------
 
     async def chat(

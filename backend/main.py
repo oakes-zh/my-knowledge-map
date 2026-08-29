@@ -68,6 +68,14 @@ class SearchRequest(BaseModel):
     user: str = "default"
 
 
+class ScopedSearchRequest(BaseModel):
+    query: str
+    doc_ids: list[str] = []
+    scope_name: str = ""
+    conversation_id: str = ""
+    user: str = "default"
+
+
 class IngestResponse(BaseModel):
     success: bool
     document_id: Optional[str] = None
@@ -345,6 +353,94 @@ async def search_stream(req: SearchRequest):
             payload = {
                 "inputs": {},
                 "query": req.query,
+                "response_mode": "streaming",
+                "user": req.user,
+            }
+            if req.conversation_id:
+                payload["conversation_id"] = req.conversation_id
+
+            import httpx
+            async with httpx.AsyncClient(timeout=120) as client:
+                async with client.stream("POST", url, json=payload, headers=headers) as resp:
+                    async for line in resp.aiter_lines():
+                        if line.startswith("data: "):
+                            yield f"{line}\n\n"
+        except Exception as e:
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+
+@app.post("/search/scoped/stream")
+async def search_scoped_stream(req: ScopedSearchRequest):
+    """Scoped RAG: retrieve only within the given documents, then stream an answer.
+
+    Retrieval uses Dify's retrieve API (each record carries ``document_id``) and is
+    filtered to ``doc_ids``; the answer is streamed through the chat app with the
+    scoped context injected into the query, instructing the model to answer only
+    from that context.
+    """
+    import json
+
+    def _join_chunks(chunks: list[tuple[str, str]]) -> str:
+        parts = []
+        for name, content in chunks:
+            label = f"【{name}】" if name else "【内容】"
+            parts.append(f"{label}\n{content[:800]}")
+        return "\n\n".join(parts)
+
+    async def _build_context() -> str:
+        doc_set = {d for d in req.doc_ids if d}
+        if not doc_set:
+            return ""
+        # 1) Semantic retrieval, filtered to the scoped documents.
+        try:
+            data = await dify_client.retrieve(req.query, top_k=30)
+            records = data.get("records", []) or []
+            chunks: list[tuple[str, str]] = []
+            for r in records:
+                seg = r.get("segment") or {}
+                doc = seg.get("document") or {}
+                did = seg.get("document_id") or doc.get("id")
+                if did in doc_set:
+                    content = (seg.get("content") or "").strip()
+                    if content:
+                        chunks.append((doc.get("name", ""), content))
+            if chunks:
+                return _join_chunks(chunks)
+        except Exception as e:
+            logger.warning(f"Scoped retrieve failed, falling back to segment dump: {e}")
+        # 2) Fallback: dump top segments of each scoped document (cap 8 docs).
+        chunks = []
+        for did in list(doc_set)[:8]:
+            try:
+                segs = await dify_client.list_document_segments(did, limit=20)
+                for seg in (segs.get("data") or [])[:5]:
+                    content = (seg.get("content") or "").strip()
+                    if content:
+                        chunks.append(((seg.get("document") or {}).get("name", ""), content))
+            except Exception as e:
+                logger.warning(f"Segment dump failed for {did}: {e}")
+        return _join_chunks(chunks)
+
+    async def event_generator():
+        try:
+            context = await _build_context()
+            if not context:
+                yield f"data: {json.dumps({'answer': '当前范围内没有可检索的内容，请换个目录/文件或问题。'})}\n\n"
+                return
+            prompt = (
+                "你是知识库问答助手。请**仅依据**以下【范围内文档内容】回答用户问题，"
+                "不得编造、不得引用范围之外的信息；若内容不足以回答，请直接说明。\n\n"
+                f"【范围】{req.scope_name or '指定范围'}\n\n"
+                f"【范围内文档内容】\n{context}\n\n"
+                f"【用户问题】{req.query}"
+            )
+            url = f"{settings.dify_base_url.rstrip('/')}/chat-messages"
+            headers = {"Authorization": f"Bearer {settings.dify_chat_api_key}"}
+            payload = {
+                "inputs": {},
+                "query": prompt,
                 "response_mode": "streaming",
                 "user": req.user,
             }

@@ -8,6 +8,7 @@ import {
   createArchiveNode,
   deleteArchiveNode,
   deleteDocument,
+  searchScopedStream,
 } from "@/lib/api";
 import { ICONS, type IconName } from "./icons";
 
@@ -185,6 +186,13 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
   const [menuDialog, setMenuDialog] = useState<{ mode: "rename" | "create"; nodeId: string } | null>(null);
   const [menuInput, setMenuInput] = useState("");
   const [menuBusy, setMenuBusy] = useState("");
+
+  // Scoped Q&A sidebar: 基于当前目录/文件的知识库检索问答
+  const [qaScope, setQaScope] = useState<{ nodeId: string; name: string; kind: string; docIds: string[] } | null>(null);
+  const [qaMessages, setQaMessages] = useState<{ role: "user" | "assistant"; content: string }[]>([]);
+  const [qaInput, setQaInput] = useState("");
+  const [qaLoading, setQaLoading] = useState(false);
+  const [qaError, setQaError] = useState("");
 
   const [dragSource, setDragSource] = useState<string | null>(null);
   const [dropTarget, setDropTarget] = useState<string | null>(null);
@@ -676,6 +684,65 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
       setMenuBusy(`删除失败: ${err.message}`);
     }
   }, [contextMenu, closeContextMenu, onTreeChanged]);
+
+  // Collect all document ids under a node (uses the full tree, ignoring collapse state)
+  const collectDocIds = (nodeId: string, kind: string): string[] => {
+    if (kind === "document") return [nodeId];
+    const ids: string[] = [];
+    const walk = (n: ArchiveNodeData) => {
+      if (n.kind === "document") ids.push(n.id);
+      (n.children || []).forEach(walk);
+    };
+    const find = (n: ArchiveNodeData): ArchiveNodeData | null => {
+      if (n.id === nodeId) return n;
+      for (const c of n.children || []) {
+        const f = find(c);
+        if (f) return f;
+      }
+      return null;
+    };
+    const target = find(treeData);
+    if (target) walk(target);
+    return ids;
+  };
+
+  const handleMenuScopedSearch = () => {
+    if (!contextMenu) return;
+    const ids = collectDocIds(contextMenu.nodeId, contextMenu.kind);
+    setQaScope({ nodeId: contextMenu.nodeId, name: contextMenu.name, kind: contextMenu.kind, docIds: ids });
+    setQaMessages([]);
+    setQaInput("");
+    setQaError("");
+    closeContextMenu();
+  };
+
+  const sendQa = async () => {
+    if (!qaScope || qaLoading) return;
+    const q = qaInput.trim();
+    if (!q) return;
+    setQaInput("");
+    setQaError("");
+    setQaMessages(prev => [...prev, { role: "user", content: q }]);
+    setQaLoading(true);
+    let acc = "";
+    const updateAssistant = () => {
+      setQaMessages(prev => {
+        const last = prev[prev.length - 1];
+        if (last && last.role === "assistant") {
+          return [...prev.slice(0, -1), { role: "assistant", content: acc }];
+        }
+        return [...prev, { role: "assistant", content: acc }];
+      });
+    };
+    await searchScopedStream(
+      q,
+      qaScope.docIds,
+      qaScope.name,
+      (text) => { acc += text; updateAssistant(); },
+      () => { setQaLoading(false); },
+      (err) => { setQaLoading(false); setQaError(err); },
+    );
+  };
 
   // Clear any pending single-click timer on unmount
   useEffect(() => {
@@ -1290,6 +1357,9 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
 
           {contextMenu.kind === "category" && (
             <>
+              <MenuItem onClick={handleMenuScopedSearch}>
+                <Ico name="search" size={11} color="#155aef" /> 基于当前目录检索回答
+              </MenuItem>
               <MenuItem onClick={() => { setMenuDialog({ mode: "rename", nodeId: contextMenu.nodeId }); setMenuInput(contextMenu.name); }}>
                 <Ico name="edit" size={11} /> 重命名
               </MenuItem>
@@ -1302,7 +1372,12 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
             </>
           )}
           {contextMenu.kind === "document" && (
-            <MenuItem danger onClick={handleMenuDeleteDoc}><Ico name="trash" size={11} color="#d92d20" /> 删除文档</MenuItem>
+            <>
+              <MenuItem onClick={handleMenuScopedSearch}>
+                <Ico name="search" size={11} color="#155aef" /> 基于当前文件检索回答
+              </MenuItem>
+              <MenuItem danger onClick={handleMenuDeleteDoc}><Ico name="trash" size={11} color="#d92d20" /> 删除文档</MenuItem>
+            </>
           )}
           {contextMenu.kind === "root" && (
             <MenuItem onClick={() => { setMenuDialog({ mode: "create", nodeId: "root" }); setMenuInput(""); }}>
@@ -1372,6 +1447,80 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
               }}
             >
               确定
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Scoped Q&A sidebar — 基于当前目录/文件的检索问答 */}
+      {qaScope && (
+        <div
+          onClick={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
+          onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); }}
+          style={{
+            position: "absolute", right: "12px", top: "52px", width: "340px",
+            maxHeight: "calc(100% - 64px)", display: "flex", flexDirection: "column",
+            background: "#ffffff", borderRadius: "10px", border: "1px solid var(--border)",
+            boxShadow: "0 8px 28px rgba(0,0,0,0.16)", zIndex: 20, overflow: "hidden",
+            fontSize: "13px",
+          }}
+        >
+          {/* header */}
+          <div style={{
+            display: "flex", justifyContent: "space-between", alignItems: "center",
+            padding: "10px 14px", borderBottom: "1px solid var(--border)", background: "#f9fafb", gap: "8px",
+          }}>
+            <span style={{ fontSize: "13px", fontWeight: 600, color: "#344054", display: "flex", alignItems: "center", gap: "6px", minWidth: 0 }}>
+              <Ico name={qaScope.kind === "document" ? "fileText" : "folder"} size={14} color={qaScope.kind === "document" ? "#667085" : "#155aef"} />
+              <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{qaScope.name}</span>
+              <span style={{ fontSize: "11px", color: "#98a2b3", fontWeight: 500, flexShrink: 0 }}>{qaScope.docIds.length} 个文件</span>
+            </span>
+            <button onClick={() => setQaScope(null)}
+              style={{ border: "none", background: "transparent", cursor: "pointer", color: "#98a2b3", display: "flex", alignItems: "center", padding: 0 }}>
+              <Ico name="close" size={14} />
+            </button>
+          </div>
+
+          {/* messages */}
+          <div style={{ flex: 1, overflowY: "auto", padding: "12px 14px", display: "flex", flexDirection: "column", gap: "10px", minHeight: "160px", maxHeight: "340px" }}>
+            {qaMessages.length === 0 && !qaLoading && (
+              <div style={{ fontSize: "12px", color: "#98a2b3", textAlign: "center", marginTop: "24px", lineHeight: 1.6 }}>
+                针对「{qaScope.name}」提问，回答仅基于该范围内的 {qaScope.docIds.length} 个文件。
+              </div>
+            )}
+            {qaMessages.map((m, i) => (
+              <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: m.role === "user" ? "flex-end" : "flex-start" }}>
+                <div style={{
+                  maxWidth: "92%", padding: "8px 12px", borderRadius: "10px", fontSize: "13px", lineHeight: 1.6,
+                  whiteSpace: "pre-wrap", wordBreak: "break-word",
+                  background: m.role === "user" ? "#155aef" : "#f2f4f7",
+                  color: m.role === "user" ? "#ffffff" : "#344054",
+                }}>
+                  {m.content}
+                </div>
+              </div>
+            ))}
+            {qaLoading && (
+              <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", color: "#98a2b3" }}>
+                <span className="loading" style={{ width: 12, height: 12, borderWidth: 2 }} /> 检索中…
+              </div>
+            )}
+            {qaError && <div style={{ fontSize: "12px", color: "#d92d20", lineHeight: 1.5 }}>{qaError}</div>}
+          </div>
+
+          {/* input */}
+          <div style={{ borderTop: "1px solid var(--border)", padding: "10px 12px", display: "flex", gap: "8px" }}>
+            <input
+              value={qaInput}
+              onChange={(e) => setQaInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendQa(); } }}
+              placeholder="基于当前范围提问…"
+              disabled={qaLoading}
+              style={{ flex: 1, height: "34px", fontSize: "13px" }}
+            />
+            <button className="btn-primary" onClick={sendQa} disabled={qaLoading || !qaInput.trim()} style={{ height: "34px", padding: "0 16px" }}>
+              {qaLoading ? <span className="loading" style={{ width: 14, height: 14 }} /> : "发送"}
             </button>
           </div>
         </div>
