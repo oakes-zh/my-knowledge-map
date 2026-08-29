@@ -66,8 +66,8 @@ const COLORS = {
   keywordLight: "#f6f5ff",  // Dify purple-50
 };
 
-// 分类层级用灰度深浅表达：上层深、下层渐浅（克制，不再用蓝→靛→紫的彩色阶梯）
-const CATEGORY_DEPTH_COLORS = ["#1d2939", "#344054", "#475467", "#667085", "#667085", "#667085"];
+// 分类层级：领域/主题用蓝色调，层级递减——深蓝 → 浅蓝 → 蓝灰 → 浅灰（上层强调、下层收敛）
+const CATEGORY_DEPTH_COLORS = ["#155aef", "#2970ff", "#475467", "#667085", "#667085", "#667085"];
 const LEVEL_LABELS = ["根", "领域", "主题", "分类", "具体", "更细"];
 
 const NODE_HEIGHT = 24;
