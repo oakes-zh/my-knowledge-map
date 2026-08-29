@@ -203,18 +203,40 @@ export default function IngestPage() {
         </p>
       </div>
 
-      {/* Tabs — Dify segmented control */}
-      <div className="seg" style={{ marginBottom: "20px" }}>
-        {tabs.map((t) => (
+      {/* Tabs + submit — 同一行：标签居左、入库按钮居右 */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", gap: "12px" }}>
+        <div className="seg">
+          {tabs.map((t) => (
+            <button
+              key={t.key}
+              className={`seg-item ${tab === t.key ? "active" : ""}`}
+              onClick={() => { setTab(t.key); setError(""); setResult(null); }}
+              disabled={loading || batchRunning}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Submit — different for batch vs single */}
+        {tab === "batch" ? (
+          batchFiles.length > 0 && !batchRunning && (
+            <button
+              className="btn-primary"
+              onClick={handleBatchUpload}
+            >
+              开始批量入库 ({batchFiles.length} 个文件)
+            </button>
+          )
+        ) : (
           <button
-            key={t.key}
-            className={`seg-item ${tab === t.key ? "active" : ""}`}
-            onClick={() => { setTab(t.key); setError(""); setResult(null); }}
-            disabled={loading || batchRunning}
+            className="btn-primary"
+            onClick={handleIngest}
+            disabled={loading}
           >
-            {t.label}
+            {loading ? <span className="loading" /> : "入库"}
           </button>
-        ))}
+        )}
       </div>
 
       {/* Forms */}
@@ -464,28 +486,6 @@ export default function IngestPage() {
           </div>
         )}
       </div>
-
-      {/* Submit — different for batch vs single */}
-      {tab === "batch" ? (
-        batchFiles.length > 0 && !batchRunning && (
-          <button
-            className="btn-primary"
-            onClick={handleBatchUpload}
-            style={{ marginBottom: "20px" }}
-          >
-            开始批量入库 ({batchFiles.length} 个文件)
-          </button>
-        )
-      ) : (
-        <button
-          className="btn-primary"
-          onClick={handleIngest}
-          disabled={loading}
-          style={{ marginBottom: "20px" }}
-        >
-          {loading ? <span className="loading" /> : "入库"}
-        </button>
-      )}
 
       {/* Error */}
       {error && (
