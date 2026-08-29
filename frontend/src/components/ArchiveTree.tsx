@@ -837,15 +837,15 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
             const isInDragSubtree = dragSource && dragSubtreeKeys.current.has(nodeKey);
             const isDropTarget = dropTarget === nodeKey;
 
-            let bgColor: string, borderColor: string, textColor: string;
+            let bgColor: string, borderColor: string, textColor: string, iconColor: string;
             if (isRoot) {
-              bgColor = COLORS.root; borderColor = COLORS.root; textColor = COLORS.rootText;
+              bgColor = COLORS.root; borderColor = COLORS.root; textColor = COLORS.rootText; iconColor = COLORS.rootText;
             } else if (isCat) {
-              // 层级由浅入深: 上层(浅层)深色, 下层(深层)渐浅
+              // 层级由浅入深: 上层(浅层)深色, 下层(深层)渐浅 —— 蓝色只体现在边框/图标，文字统一深灰
               const depthColor = CATEGORY_DEPTH_COLORS[Math.min(node.depth - 1, CATEGORY_DEPTH_COLORS.length - 1)];
-              bgColor = COLORS.categoryLight; borderColor = depthColor; textColor = depthColor;
+              bgColor = COLORS.categoryLight; borderColor = depthColor; textColor = "#344054"; iconColor = depthColor;
             } else {
-              bgColor = COLORS.documentLight; borderColor = COLORS.document; textColor = "#344054";
+              bgColor = COLORS.documentLight; borderColor = COLORS.document; textColor = "#344054"; iconColor = textColor;
             }
             if (isDragSrc || isInDragSubtree) {
               borderColor = COLORS.dragSource;
@@ -950,7 +950,7 @@ export default function ArchiveTree({ treeData, onTreeChanged }: ArchiveTreeProp
                   <g style={{ pointerEvents: "none" }}>
                     {/* 根节点=Remix database；目录（知识库位置）=Remix folder */}
                     <g transform={`translate(${iconX}, ${iconY}) scale(${ICON_SCALE})`}>
-                      <path d={isRoot ? ICONS.db : ICONS.folder} fill={isRoot ? COLORS.rootText : textColor} />
+                      <path d={isRoot ? ICONS.db : ICONS.folder} fill={isRoot ? COLORS.rootText : iconColor} />
                     </g>
                     <text x={textX} y={cy + nh / 2} dy="0.35em"
                       style={{ fontSize: `${fontSize}px`, fill: textColor, fontWeight: isRoot ? 700 : 600, userSelect: "none" }}>
