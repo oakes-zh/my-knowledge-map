@@ -10,3 +10,4 @@ data/
 .venv/
 .pip-cache/
 .npm-cache/
+*.db

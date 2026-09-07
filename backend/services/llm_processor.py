@@ -5,42 +5,66 @@ from config import settings
 logger = logging.getLogger(__name__)
 
 
-async def summarize_text(text: str, max_length: int = 200) -> str:
-    """Generate a summary of the text using LLM.
+def _effective_llm_key() -> str:
+    """返回生效的 LLM key：优先 LLM_API_KEY（通用字段），回退 DEEPSEEK_API_KEY（旧字段）。"""
+    return getattr(settings, "llm_api_key", "") or getattr(settings, "deepseek_api_key", "")
 
-    Uses Dify's completion API or direct OpenAI/DeepSeek API.
+
+async def _chat_completion(
+    messages: list[dict],
+    max_tokens: int = 200,
+    timeout: int = 60,
+) -> str:
+    """通用 OpenAI 兼容 chat 调用（DeepSeek / 智谱 GLM / OpenAI 等均支持）。
+
+    地址、模型、key 全部来自 settings：
+    - LLM_BASE_URL（默认 https://api.deepseek.com/v1）
+    - LLM_MODEL  （默认 deepseek-chat）
+    - LLM_API_KEY（或旧的 DEEPSEEK_API_KEY）
     """
+    api_key = _effective_llm_key()
+    if not api_key:
+        raise RuntimeError("LLM API key 未配置（LLM_API_KEY / DEEPSEEK_API_KEY）")
+
+    url = f"{settings.llm_base_url.rstrip('/')}/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+    }
+    payload = {
+        "model": settings.llm_model,
+        "messages": messages,
+        "max_tokens": max_tokens,
+    }
+    async with httpx.AsyncClient(timeout=timeout) as client:
+        resp = await client.post(url, json=payload, headers=headers)
+        resp.raise_for_status()
+        data = resp.json()
+        return data["choices"][0]["message"]["content"]
+
+
+async def summarize_text(text: str, max_length: int = 200) -> str:
+    """Generate a summary of the text using the configured LLM."""
     if not text or len(text) < 50:
         return text[:max_length] if text else ""
+    # 未配置 key 时直接降级为截断摘要，避免一次注定失败的 60s 网络超时
+    if not _effective_llm_key():
+        logger.warning("LLM API key 未配置，使用截断摘要（不调用 LLM）")
+        return text[:max_length]
 
-    provider = settings.llm_provider
-
-    if provider == "dify":
-        return await _summarize_via_dify(text, max_length)
-    elif provider == "openai":
-        return await _summarize_via_openai(text, max_length)
-    elif provider == "deepseek":
-        return await _summarize_via_deepseek(text, max_length)
-    else:
-        # Fallback: simple truncation
-        return text[:max_length] + "..."
+    return await _summarize_via_deepseek(text, max_length)
 
 
 async def auto_tag(text: str, num_tags: int = 5) -> list[str]:
-    """Generate tags for the text using LLM."""
+    """Generate tags for the text using the configured LLM."""
     if not text or len(text) < 20:
         return []
-
-    provider = settings.llm_provider
-
-    if provider == "dify":
-        return await _tag_via_dify(text, num_tags)
-    elif provider == "openai":
-        return await _tag_via_openai(text, num_tags)
-    elif provider == "deepseek":
-        return await _tag_via_deepseek(text, num_tags)
-    else:
+    # 未配置 key 时直接返回空标签，避免一次注定失败的 60s 网络超时
+    if not _effective_llm_key():
+        logger.warning("LLM API key 未配置，跳过自动标签（不调用 LLM）")
         return []
+
+    return await _tag_via_deepseek(text, num_tags)
 
 
 async def archive_path(
@@ -93,15 +117,7 @@ async def archive_path(
     )
 
     try:
-        provider = settings.llm_provider
-        if provider == "dify":
-            raw = await _complete_via_dify(prompt, max_tokens=60)
-        elif provider == "openai":
-            raw = await _complete_via_openai(prompt, max_tokens=60)
-        elif provider == "deepseek":
-            raw = await _complete_via_deepseek(prompt, max_tokens=60)
-        else:
-            return []
+        raw = await _complete_via_deepseek(prompt, max_tokens=60)
 
         # Parse levels: tolerate / ／ 、 → \n as separators
         for sep in ("／", "→", "、", "，", "\n", ">"):
@@ -161,24 +177,13 @@ async def _complete_via_openai(prompt: str, max_tokens: int = 60) -> str:
 
 
 async def _complete_via_deepseek(prompt: str, max_tokens: int = 60) -> str:
-    url = "https://api.deepseek.com/v1/chat/completions"
-    headers = {
-        "Authorization": f"Bearer {settings.deepseek_api_key}",
-        "Content-Type": "application/json",
-    }
-    payload = {
-        "model": "deepseek-chat",
-        "messages": [
+    return await _chat_completion(
+        messages=[
             {"role": "system", "content": "你是知识库归档助手，只输出归档路径层级。"},
             {"role": "user", "content": prompt},
         ],
-        "max_tokens": max_tokens,
-    }
-    async with httpx.AsyncClient(timeout=60) as client:
-        resp = await client.post(url, json=payload, headers=headers)
-        resp.raise_for_status()
-        data = resp.json()
-        return data["choices"][0]["message"]["content"]
+        max_tokens=max_tokens,
+    )
 
 
 async def _summarize_via_dify(text: str, max_length: int) -> str:
@@ -279,51 +284,60 @@ async def _tag_via_openai(text: str, num_tags: int) -> list[str]:
 
 async def _summarize_via_deepseek(text: str, max_length: int) -> str:
     try:
-        url = "https://api.deepseek.com/v1/chat/completions"
-        headers = {
-            "Authorization": f"Bearer {settings.deepseek_api_key}",
-            "Content-Type": "application/json",
-        }
-        payload = {
-            "model": "deepseek-chat",
-            "messages": [
+        return await _chat_completion(
+            messages=[
                 {"role": "system", "content": f"Summarize the text in Chinese within {max_length} characters."},
                 {"role": "user", "content": text[:4000]},
             ],
-            "max_tokens": max_length,
-        }
-        async with httpx.AsyncClient(timeout=60) as client:
-            resp = await client.post(url, json=payload, headers=headers)
-            resp.raise_for_status()
-            data = resp.json()
-            return data["choices"][0]["message"]["content"]
+            max_tokens=max_length,
+        )
     except Exception as e:
-        logger.error(f"DeepSeek summarize failed: {e}")
+        logger.error(f"LLM summarize failed: {e}")
         return text[:max_length] + "..."
 
 
 async def _tag_via_deepseek(text: str, num_tags: int) -> list[str]:
     try:
-        url = "https://api.deepseek.com/v1/chat/completions"
-        headers = {
-            "Authorization": f"Bearer {settings.deepseek_api_key}",
-            "Content-Type": "application/json",
-        }
-        payload = {
-            "model": "deepseek-chat",
-            "messages": [
+        answer_text = await _chat_completion(
+            messages=[
                 {"role": "system", "content": f"Generate {num_tags} tags in Chinese. Return only comma-separated tags."},
                 {"role": "user", "content": text[:4000]},
             ],
-            "max_tokens": 100,
-        }
-        async with httpx.AsyncClient(timeout=60) as client:
-            resp = await client.post(url, json=payload, headers=headers)
-            resp.raise_for_status()
-            data = resp.json()
-            answer = data["choices"][0]["message"]["content"]
-            tags = [t.strip() for t in answer.replace("\n", ",").split(",") if t.strip()]
-            return tags[:num_tags]
+            max_tokens=100,
+        )
+        tags = [t.strip() for t in answer_text.replace("\n", ",").split(",") if t.strip()]
+        return tags[:num_tags]
     except Exception as e:
-        logger.error(f"DeepSeek tagging failed: {e}")
+        logger.error(f"LLM tagging failed: {e}")
         return []
+
+
+async def answer(
+    prompt: str,
+    system_prompt: str = "你是知识库问答助手，依据给定资料回答问题。",
+    max_tokens: int = 1000,
+) -> str:
+    """通用问答（RAG 场景）。
+
+    与 _complete_via_* 的区别：允许自定义 system prompt，用于「依据检索到的
+    上下文回答用户问题」这类通用场景，而非归档路径归纳。
+
+    走 settings 里的通用 LLM 配置（LLM_BASE_URL / LLM_MODEL / LLM_API_KEY），
+    DeepSeek / 智谱 GLM / OpenAI 等任意 OpenAI 兼容服务均可。
+    """
+    if not _effective_llm_key():
+        logger.error("LLM API key not configured")
+        return ""
+
+    try:
+        return await _chat_completion(
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": prompt},
+            ],
+            max_tokens=max_tokens,
+            timeout=120,
+        )
+    except Exception as e:
+        logger.error(f"LLM answer failed: {e}")
+        return ""

@@ -145,7 +145,7 @@ export default function BrowsePage() {
                     }}>
                       <span>{doc.word_count || 0} 字</span>
                       <span>{doc.hit_count || 0} 次检索</span>
-                      <span>{doc.created_at ? new Date(doc.created_at * 1000).toLocaleDateString("zh-CN") : ""}</span>
+                      <span>{doc.created_at ? new Date(typeof doc.created_at === "number" ? doc.created_at * 1000 : doc.created_at).toLocaleDateString("zh-CN") : ""}</span>
                     </div>
 
                     {/* 文件关键字: flat, independent attributes (auto-detected) */}

@@ -4,7 +4,8 @@ const nextConfig = {
     return [
       {
         source: '/api/backend/:path*',
-        destination: `${process.env.BACKEND_URL || 'http://backend:8900'}/:path*`,
+        // 本地开发默认走 127.0.0.1；Docker 部署通过 BACKEND_URL 覆盖为服务名
+        destination: `${process.env.BACKEND_URL || 'http://127.0.0.1:8900'}/:path*`,
       },
     ];
   },

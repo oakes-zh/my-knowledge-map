@@ -438,7 +438,7 @@ def serialize(tree: dict, doc_map: dict) -> dict:
                 continue
             children.append({
                 "id": doc_id,
-                "name": d.get("name", "未命名"),
+                "name": d.get("name") or d.get("title") or "未命名",
                 "kind": "document",
                 "word_count": d.get("word_count", 0),
                 "pdf_type": d.get("pdf_type", ""),
