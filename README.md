@@ -1,4 +1,4 @@
-# Personal Knowledge Base
+# My Knowledge Map
 
 基于 Dify 的个人知识库系统 —— 采集零散图片、文档、链接，AI 自动摘要/标签，语义检索，知识图谱归档。
 
