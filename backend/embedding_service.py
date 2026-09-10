@@ -5,6 +5,7 @@ from typing import List, Optional
 from pathlib import Path
 
 from config import settings
+from services.net_api import post_json
 
 logger = logging.getLogger(__name__)
 
@@ -40,21 +41,19 @@ class EmbeddingService:
         if not self.api_key:
             raise RuntimeError("EMBEDDING_API_KEY 未配置，无法生成向量（请在 .env 中配置后重启）")
 
-        async with httpx.AsyncClient(timeout=30) as client:
-            response = await client.post(
-                f"{self.base_url}/embeddings",
-                headers={
-                    "Authorization": f"Bearer {self.api_key}",
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "model": self.model,
-                    "input": text,
-                    "dimensions": self.dimensions
-                }
-            )
-            response.raise_for_status()
-            result = response.json()
+        result = await post_json(
+            f"{self.base_url}/embeddings",
+            headers={
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "model": self.model,
+                "input": text,
+                "dimensions": self.dimensions
+            },
+            timeout=30,
+        )
 
         embedding = result["data"][0]["embedding"]
         if len(embedding) != self.dimensions:
@@ -85,21 +84,19 @@ class EmbeddingService:
         if not self.api_key:
             raise RuntimeError("EMBEDDING_API_KEY 未配置，无法生成向量（请在 .env 中配置后重启）")
 
-        async with httpx.AsyncClient(timeout=60) as client:
-            response = await client.post(
-                f"{self.base_url}/embeddings",
-                headers={
-                    "Authorization": f"Bearer {self.api_key}",
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "model": self.model,
-                    "input": texts,
-                    "dimensions": self.dimensions
-                }
-            )
-            response.raise_for_status()
-            result = response.json()
+        result = await post_json(
+            f"{self.base_url}/embeddings",
+            headers={
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "model": self.model,
+                "input": texts,
+                "dimensions": self.dimensions
+            },
+            timeout=60,
+        )
 
         embeddings = [d["embedding"] for d in result["data"]]
 

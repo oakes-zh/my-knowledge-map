@@ -1,6 +1,7 @@
 import httpx
 import logging
 from config import settings
+from services.net_api import post_json
 
 logger = logging.getLogger(__name__)
 
@@ -36,11 +37,8 @@ async def _chat_completion(
         "messages": messages,
         "max_tokens": max_tokens,
     }
-    async with httpx.AsyncClient(timeout=timeout) as client:
-        resp = await client.post(url, json=payload, headers=headers)
-        resp.raise_for_status()
-        data = resp.json()
-        return data["choices"][0]["message"]["content"]
+    data = await post_json(url, headers=headers, json=payload, timeout=timeout)
+    return data["choices"][0]["message"]["content"]
 
 
 async def summarize_text(text: str, max_length: int = 200) -> str:
